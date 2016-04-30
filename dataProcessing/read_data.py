@@ -1,0 +1,56 @@
+#encoding=utf8
+'''
+该文件用于加载字符的矩阵数据
+'''
+import pandas as pd
+import numpy as np
+from PIL import Image
+import logging
+import timeit
+
+
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
+                    level=logging.DEBUG
+                    )
+
+def load_pix(file_path,shape = (15,15)):
+    logging.debug('开始加载文件:%s....'%(file_path))
+    data = pd.read_csv(file_path,sep='\t',header=None)
+    # print train_data
+    # print train_data[1]
+    y = data[0].apply(lambda x:x[0])
+    im_name = data[0].apply(lambda x:x.split('/')[1])
+    # print y
+    if shape[0] == 1:
+        train_pix = np.array([np.array(item.split(','),np.uint8)
+                              for item in data[1]])/255.0
+    else:
+        train_pix = np.array([np.array(item.split(','),np.uint8).reshape(shape)
+                              for item in data[1]])/255.0
+    # print train_pix[0]
+
+    # pic = Image.fromarray(train_pix[0])
+    # pic.save('test.bmp','bmp')
+    logging.debug('完成加载文件并转换成矩阵，总共有%d个图片！'%(len(train_pix)))
+    return train_pix,y,im_name
+
+if __name__=='__main__':
+
+    train_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/' \
+                      '20160426/train_5.csv'
+    test_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/' \
+                     '/20160426/test_10.csv'
+
+    start = timeit.default_timer()
+
+    train_pix,train_y,train_im_name = load_pix(train_file_path,
+                         shape=(1, 15 * 15)
+                         )
+
+    test_pix,test_y,test_im_name = load_pix(test_file_path,
+                        shape=(1, 15 * 15)
+                        )
+    logging.debug('the shape of train sample:%d,%d' % (train_pix.shape))
+    logging.debug('the shape of test sample:%d,%d' % (test_pix.shape))
+    end = timeit.default_timer()
+    logging.debug('总共运行时间:%ds' % (end-start))
