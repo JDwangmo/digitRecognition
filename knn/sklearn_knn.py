@@ -61,4 +61,3 @@ test_result.to_csv(test_result_path,sep='\t')
 
 end = timeit.default_timer()
 logging.debug('总共运行时间:%ds' % (end-start))
-fddsf
