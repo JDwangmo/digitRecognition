@@ -9,11 +9,19 @@ import logging
 import timeit
 
 
+
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.DEBUG
                     )
 
-def load_pix(file_path,shape = (15,15)):
+def load_pix(file_path,shape = (15,15),shuffle=True):
+    '''
+
+    :param file_path:
+    :param shape:
+    :param shuffle:bool，是否打乱数据
+    :return:
+    '''
     logging.debug('开始加载文件:%s....'%(file_path))
     data = pd.read_csv(file_path,sep='\t',header=None)
     # print train_data
@@ -28,7 +36,16 @@ def load_pix(file_path,shape = (15,15)):
         train_pix = np.array([np.array(item.split(','),np.uint8).reshape(shape)
                               for item in data[1]])/255.0
     # print train_pix[0]
-
+    # 打乱数据
+    if shuffle:
+        logging.debug('随机打乱数据...')
+        rand = np.random.RandomState(0)
+        rand_list = rand.permutation(len(y))
+        # print rand_list
+        # print y[rand_list]
+        y = y[rand_list]
+        im_name = im_name[rand_list]
+        train_pix = train_pix[rand_list]
     # pic = Image.fromarray(train_pix[0])
     # pic.save('test.bmp','bmp')
     logging.debug('完成加载文件并转换成矩阵，总共有%d个图片！'%(len(train_pix)))

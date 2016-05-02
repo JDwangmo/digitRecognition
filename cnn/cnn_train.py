@@ -3,6 +3,7 @@ from dataProcessing.read_data import load_pix
 import logging
 import timeit
 import pandas as pd
+import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense,Convolution2D,Activation,MaxPooling2D,Flatten,Dropout
 from keras.optimizers import SGD
@@ -10,8 +11,8 @@ from keras.utils import np_utils
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.DEBUG
                     )
-
-num_train = 50
+NB_EPOCH = 5
+num_train = 100
 num_test = 1000
 
 train_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/' \
@@ -40,6 +41,7 @@ character_name = sorted(list(set('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')))
 # print character_name
 # 将y转换成one-hot编码
 train_y = [character_name.index(item) for item in train_y]
+
 train_y = np_utils.to_categorical(train_y,34)
 test_y = [character_name.index(item) for item in test_y]
 test_y = np_utils.to_categorical(test_y,34)
@@ -74,27 +76,35 @@ model.add(Dense(output_dim=34, init="glorot_uniform"))
 model.add(Activation("softmax"))
 
 sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
-nb_epoch = 15
-model.compile(loss='categorical_crossentropy', optimizer=sgd)
+nb_epoch = NB_EPOCH
+model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics=["accuracy"])
 start_time = timeit.default_timer()
 model.fit(train_pix,
           train_y,
           nb_epoch=nb_epoch,
           verbose=1,
+          # validation_data=(test_pix,test_y),
           validation_split=0.1,
           shuffle=True,
           batch_size=100)
-
+# print model.get_weights()
+# print model.summary()
 end_time = timeit.default_timer()
 print 'train time : %f'%(end_time-start_time)
 
 # 保存模型
 json_string = model.to_json()
-print json_string
-open('/home/jdwang/PycharmProjects/digitRecognition/cnn/model/'
-     'cnn_model_architecture_%dwin_%depoch.json'%(win_shape,nb_epoch), 'w').write(json_string)
-model.save_weights('/home/jdwang/PycharmProjects/digitRecognition/cnn/model/'
-                   'cnn_model_weights_%dwin_%depoch.h5'%(win_shape,nb_epoch),overwrite=True)
+# print json_string
+cnn_model_architecture = '/home/jdwang/PycharmProjects/digitRecognition/cnn/model/' \
+                         'cnn_model_architecture_%dtrain_%dwin_%depoch.json' \
+                         % (num_train,win_shape, nb_epoch)
+open(cnn_model_architecture, 'w').write(json_string)
+logging.info('模型架构保存到：%s'%cnn_model_architecture)
+cnn_model_weights = '/home/jdwang/PycharmProjects/digitRecognition/cnn/model/' \
+                    'cnn_model_weights_%dtrain_%dwin_%depoch.h5' \
+                    % (num_train,win_shape, nb_epoch)
+model.save_weights(cnn_model_weights,overwrite=True)
+logging.info('模型权重保存到：%s'%cnn_model_weights)
 
 quit()
 # 预测

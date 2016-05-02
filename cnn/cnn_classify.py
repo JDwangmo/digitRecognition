@@ -11,7 +11,8 @@ from keras.utils import np_utils
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.DEBUG
                     )
-
+# 设置迭代的次数
+NB_EPOCH = 5
 num_train = 50
 num_test = 1000
 
@@ -21,7 +22,8 @@ test_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/
 image_shape = (15,15)
 
 test_pix,test_y,test_im_name = load_pix(test_file_path,
-                    shape=image_shape
+                    shape=image_shape,
+                    shuffle=False
                     )
 label = test_y
 
@@ -42,11 +44,23 @@ logging.debug( 'the shape of test sample:%d,%d,%d,%d'%(test_pix.shape))
 
 start_time = timeit.default_timer()
 win_shape = 2
-nb_epoch = 15
-model = model_from_json(open('/home/jdwang/PycharmProjects/digitRecognition/cnn/model/'
-                             'cnn_model_architecture_%dwin_%depoch.json'%(win_shape,nb_epoch)).read())
-model.load_weights('/home/jdwang/PycharmProjects/digitRecognition/cnn/model/'
-                   'cnn_model_weights_%dwin_%depoch.h5'%(win_shape,nb_epoch))
+nb_epoch = NB_EPOCH
+cnn_model_architecture = '/home/jdwang/PycharmProjects/digitRecognition/cnn/model/' \
+                         'cnn_model_architecture_%dtrain_%dwin_%depoch.json' \
+                         % (num_train,win_shape, nb_epoch)
+logging.info('加载模型架构（%s）...'%cnn_model_architecture)
+
+model = model_from_json(open(cnn_model_architecture,'r').read())
+cnn_model_weights = '/home/jdwang/PycharmProjects/digitRecognition/cnn/model/' \
+                    'cnn_model_weights_%dtrain_%dwin_%depoch.h5' \
+                    % (num_train,win_shape, nb_epoch)
+
+logging.info('加载模型权重（%s）...'%cnn_model_weights)
+model.load_weights(cnn_model_weights)
+sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile( optimizer=sgd,loss='mse')
+
+
 end_time = timeit.default_timer()
 
 print 'train time : %f'%(end_time-start_time)
@@ -66,7 +80,7 @@ test_result = pd.DataFrame({
 })
 # 保存结果
 test_result_path = '/home/jdwang/PycharmProjects/digitRecognition/cnn/result/20160426/' \
-                   'cnn_result_%d_%d.csv' % (num_train, num_test)
+                   'cnn_result_%epoch_%d_%d.csv' % (nb_epoch,num_train, num_test)
 test_result.to_csv(test_result_path, sep='\t')
 # 保存模型
 
