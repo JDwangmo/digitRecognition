@@ -11,7 +11,7 @@ from keras.utils import np_utils
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.DEBUG
                     )
-NB_EPOCH = 5
+NB_EPOCH = 50
 num_train = 100
 num_test = 1000
 

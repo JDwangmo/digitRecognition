@@ -4,19 +4,24 @@ import logging
 import timeit
 import pandas as pd
 from keras.models import Sequential,model_from_json
-from keras.layers import Dense,Convolution2D,Activation,MaxPooling2D,Flatten,Dropout
 from keras.optimizers import SGD
 from keras.utils import np_utils
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.DEBUG
                     )
+# 设置参数
 # 设置迭代的次数
-NB_EPOCH = 5
-num_train = 100
-num_test = 1000
+NB_EPOCH = 50
+NUM_TRAIN = 100
+NUM_TEST = 1000
+
+logging.info('选择迭代次数：%d;训练sample%d(单个字符)的模型。'%(NB_EPOCH,NUM_TRAIN))
+logging.info('进行测试，测试sample个数(单个字符)：%d...'%(NUM_TEST))
 
 
+num_train = NUM_TRAIN
+num_test = NUM_TEST
 test_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/' \
                  '20160426/test_%d.csv'%(num_test)
 image_shape = (15,15)
@@ -80,7 +85,7 @@ test_result = pd.DataFrame({
 })
 # 保存结果
 test_result_path = '/home/jdwang/PycharmProjects/digitRecognition/cnn/result/20160426/' \
-                   'cnn_result_%epoch_%d_%d.csv' % (nb_epoch,num_train, num_test)
+                   'cnn_result_%depoch_%d_%d.csv' % (nb_epoch,num_train, num_test)
 test_result.to_csv(test_result_path, sep='\t')
 # 保存模型
 
