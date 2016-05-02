@@ -13,7 +13,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     )
 # 设置迭代的次数
 NB_EPOCH = 5
-num_train = 50
+num_train = 100
 num_test = 1000
 
 

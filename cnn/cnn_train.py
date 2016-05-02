@@ -83,7 +83,7 @@ model.fit(train_pix,
           train_y,
           nb_epoch=nb_epoch,
           verbose=1,
-          # validation_data=(test_pix,test_y),
+          validation_data=(test_pix,test_y),
           validation_split=0.1,
           shuffle=True,
           batch_size=100)
@@ -106,24 +106,4 @@ cnn_model_weights = '/home/jdwang/PycharmProjects/digitRecognition/cnn/model/' \
 model.save_weights(cnn_model_weights,overwrite=True)
 logging.info('模型权重保存到：%s'%cnn_model_weights)
 
-quit()
-# 预测
-# classes = model.predict_classes([test_pix], batch_size=32)
-# print classes.shape
-# pred_result = [character_name[item] for item in classes]
-# # print pred_result
-# # print label
-# is_correct = pred_result==label
-# print sum(is_correct)
-# print sum(is_correct)/(len(label)*1.0)
-# test_result = pd.DataFrame({
-#     'label': label,
-#     'pred': pred_result,
-#     'is_correct': is_correct,
-#     'image_id': test_im_name
-# })
-#
-# # 保存结果
-# test_result_path = '/home/jdwang/PycharmProjects/digitRecognition/cnn/result/20160426/' \
-#                    'cnn_result_%d_%d.csv' % (num_train, num_test)
-# test_result.to_csv(test_result_path, sep='\t')
+
