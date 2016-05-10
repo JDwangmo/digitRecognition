@@ -19,12 +19,16 @@ test_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/
                  '20160426/test_%d.csv'%(num_test)
 
 train_pix,train_y,train_im_name = load_pix(train_file_path,
-                     shape=(1,15*15)
-                     )
+                                           shape=(1,15*15),
+                                           shuffle = True,
+                                           normalize=True
+                                           )
 
 test_pix,test_y,test_im_name = load_pix(test_file_path,
-                    shape=(1, 15 * 15)
-                    )
+                                        shape=(1, 15 * 15),
+                                        shuffle=True,
+                                        normalize=True
+                                        )
 logging.debug( 'the shape of train sample:%d,%d'%(train_pix.shape))
 logging.debug( 'the shape of test sample:%d,%d'%(test_pix.shape))
 
