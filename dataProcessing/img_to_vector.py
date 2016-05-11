@@ -17,8 +17,15 @@ NUM_TRAIN = 100
 # 设置随机抽取的测试集中，每个字符数量的大小
 NUM_TEST = 1000
 
+char_set = 3
 # 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
-character_name = sorted(list(set('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')))
+if char_set == 1:
+    character_name = sorted(list(set('0123456789')))
+elif char_set == 2:
+    character_name = sorted(list(set('ABCDEFGHIJKLMNOPQRSTUVWXYZ')))
+else:
+    character_name = sorted(list(set('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')))
+
 logging.debug('需要处理的字符长度为：%d，有：%s'%(len(character_name),str(character_name)))
 
 data_dir = '/home/jdwang/PycharmProjects/digitRecognition/image_data/20160426/'
@@ -32,9 +39,9 @@ num_test = NUM_TEST
 logging.debug('每个字符分别随机选取训练和测试sample个数分别为：%d,%d'%(num_train,num_test))
 
 train_data_file = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/20160426/' \
-                  'train_%d.csv'%(num_train)
+                  'train_%dcharset_%d.csv'%(char_set,num_train)
 test_data_file = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/20160426/' \
-                  'test_%d.csv'%(num_test)
+                  'test_%dcharset_%d.csv'%(char_set,num_test)
 logging.debug('训练文件为：%s'%(train_data_file))
 logging.debug('测试文件为：%s'%(test_data_file))
 train_data_out = open(train_data_file,'w')

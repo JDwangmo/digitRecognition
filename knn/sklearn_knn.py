@@ -10,25 +10,25 @@ import timeit
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.DEBUG
                     )
-num_train = 50
+num_train = 100
 num_test = 1000
 # 设置训练数据和测试数据的路径
+char_set = 1
 train_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/' \
-                  '20160426/train_%d.csv'%(num_train)
+                  '20160426/train_%dcharset_%d.csv'%(char_set,num_train)
 test_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/' \
-                 '20160426/test_%d.csv'%(num_test)
+                 '20160426/test_%dcharset_%d.csv'%(char_set,num_test)
 
-train_pix,train_y,train_im_name = load_pix(train_file_path,
-                                           shape=(1,15*15),
-                                           shuffle = True,
-                                           normalize=True
-                                           )
+train_pix, train_y, train_label, train_im_name = load_pix(train_file_path,
+                                                          shape=(1,15*15),
+                                                          char_set=char_set
+                                                          )
 
-test_pix,test_y,test_im_name = load_pix(test_file_path,
-                                        shape=(1, 15 * 15),
-                                        shuffle=True,
-                                        normalize=True
-                                        )
+test_pix, test_y, test_label, test_im_name = load_pix(test_file_path,
+                                                      shape=(1, 15 * 15),
+                                                      char_set=char_set
+                                                      )
+
 logging.debug( 'the shape of train sample:%d,%d'%(train_pix.shape))
 logging.debug( 'the shape of test sample:%d,%d'%(test_pix.shape))
 

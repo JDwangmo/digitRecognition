@@ -14,7 +14,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.DEBUG
                     )
 
-def load_pix(file_path,shape = (15,15),shuffle=True,normalize = True):
+def load_pix(file_path,shape = (15,15),shuffle=True,normalize = True, char_set = 1):
     '''
 
     :param file_path:
@@ -26,7 +26,15 @@ def load_pix(file_path,shape = (15,15),shuffle=True,normalize = True):
     data = pd.read_csv(file_path,sep='\t',header=None)
     # print train_data
     # print train_data[1]
-    y = data[0].apply(lambda x:x[0]).as_matrix()
+    if char_set == 1:
+        character_name = sorted(list(set('0123456789')))
+    elif char_set == 2:
+        character_name = sorted(list(set('ABCDEFGHIJKLMNOPQRSTUVWXYZ')))
+    else:
+        character_name = sorted(list(set('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')))
+
+    label = data[0].apply(lambda x:x[0]).as_matrix()
+    y = np.asarray([character_name.index(item) for item in label])
     im_name = data[0].apply(lambda x:x.split('/')[1]).as_matrix()
     # print y
     if shape[0] == 1:
@@ -45,13 +53,13 @@ def load_pix(file_path,shape = (15,15),shuffle=True,normalize = True):
         rand_list = rand.permutation(len(y))
         # print y[rand_list]
         y = y[rand_list]
+        label = label[rand_list]
         im_name = im_name[rand_list]
         train_pix = train_pix[rand_list]
-
     # pic = Image.fromarray(train_pix[0])
     # pic.save('test.bmp','bmp')
     logging.debug('完成加载文件并转换成矩阵，总共有%d个图片！'%(len(train_pix)))
-    return train_pix,y,im_name
+    return train_pix,y,label,im_name
 
 if __name__=='__main__':
 

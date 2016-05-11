@@ -5,28 +5,33 @@ import timeit
 import pandas as pd
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Dense,Convolution2D,Activation,MaxPooling2D,Flatten,Dropout
+from keras.layers import Dense,Convolution2D,Activation,MaxPooling2D,Flatten,Dropout,ZeroPadding2D
 from keras.optimizers import SGD
 from keras.utils import np_utils
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.DEBUG
                     )
-NB_EPOCH = 50
+NB_EPOCH = 5043
 num_train = 100
 num_test = 1000
+char_set = 1
+num_class = 10
 
-train_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/' \
-                  '20160426/train_%d.csv'%(num_train)
-test_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/' \
-                 '20160426/test_%d.csv'%(num_test)
+train_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/20160426/' \
+                  'train_%dcharset_%d.csv' % (char_set, num_train)
+test_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/20160426/' \
+                 'test_%dcharset_%d.csv' % (char_set, num_test)
+
 image_shape = (15,15)
-train_pix,train_y,train_im_name = load_pix(train_file_path,
-                     shape=image_shape
-                     )
+train_pix,train_y,train_label,train_im_name = load_pix(train_file_path,
+                                           shape=image_shape,
+                                           char_set = char_set
+                                           )
 
-test_pix,test_y,test_im_name = load_pix(test_file_path,
-                    shape=image_shape
-                    )
+test_pix,test_y,test_label,test_im_name = load_pix(test_file_path,
+                                                   shape=image_shape,
+                                                   char_set=char_set
+                                                   )
 label = test_y
 train_pix = train_pix.reshape(train_pix.shape[0],
                              1,
@@ -37,14 +42,14 @@ test_pix = test_pix.reshape(test_pix.shape[0],
                              test_pix.shape[1],
                              test_pix.shape[2])
 
-character_name = sorted(list(set('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')))
+# character_name = sorted(list(set('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')))
 # print character_name
 # 将y转换成one-hot编码
-train_y = [character_name.index(item) for item in train_y]
+# train_y = [character_name.index(item) for item in train_y]
 
-train_y = np_utils.to_categorical(train_y,34)
-test_y = [character_name.index(item) for item in test_y]
-test_y = np_utils.to_categorical(test_y,34)
+train_y = np_utils.to_categorical(train_y,num_class)
+# test_y = [character_name.index(item) for item in test_y]
+test_y = np_utils.to_categorical(test_y,num_class)
 # print train_y.shape
 # print test_y.shape
 # quit()
@@ -53,14 +58,22 @@ logging.debug( 'the shape of train sample:%d,%d,%d,%d'%(train_pix.shape))
 logging.debug( 'the shape of test sample:%d,%d,%d,%d'%(test_pix.shape))
 
 model = Sequential()
-win_shape = 2
-model.add(Convolution2D(20,win_shape,win_shape,
+win_shape = 3
+model.add(ZeroPadding2D((1,1),input_shape = (1,image_shape[0],image_shape[1])))
+model.add(Convolution2D(32,win_shape,win_shape,
                         border_mode='valid',
-                        input_shape = (1,image_shape[0],image_shape[1])
                         ))
 model.add(Activation('tanh'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Convolution2D(50,win_shape,win_shape,
+model.add(ZeroPadding2D((1,1)))
+model.add(Convolution2D(64,win_shape,win_shape,
+                        border_mode='valid'
+                        ))
+model.add(Activation('tanh'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+model.add(ZeroPadding2D((1,1)))
+model.add(Convolution2D(128,win_shape,win_shape,
                         border_mode='valid'
                         ))
 model.add(Activation('tanh'))
@@ -72,7 +85,7 @@ model.add(Dropout(p=0.5))
 model.add(Dense(output_dim=50, init="glorot_uniform"))
 model.add(Activation("relu"))
 model.add(Dropout(p=0.5))
-model.add(Dense(output_dim=34, init="glorot_uniform"))
+model.add(Dense(output_dim=num_class, init="glorot_uniform"))
 model.add(Activation("softmax"))
 
 sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
