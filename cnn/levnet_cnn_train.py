@@ -57,39 +57,51 @@ test_y = np_utils.to_categorical(test_y,num_class)
 
 logging.debug( 'the shape of train sample:%d,%d,%d,%d'%(train_pix.shape))
 logging.debug( 'the shape of test sample:%d,%d,%d,%d'%(test_pix.shape))
-
 model = Sequential()
-win_shape = 3
-model.add(ZeroPadding2D((1,1),input_shape = (1,image_shape[0],image_shape[1])))
-model.add(Convolution2D(32,win_shape,win_shape,
-                        border_mode='valid',
-                        ))
-model.add(Activation('tanh'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(ZeroPadding2D((1,1)))
-model.add(Convolution2D(64,win_shape,win_shape,
-                        border_mode='valid'
-                        ))
-model.add(Activation('tanh'))
+
+# Layer 1
+model.add(Convolution2D(96, 11, 11, input_shape = (1,15,15), border_mode='same'))
+model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(ZeroPadding2D((1,1)))
-model.add(Convolution2D(128,win_shape,win_shape,
-                        border_mode='valid'
-                        ))
-model.add(Activation('tanh'))
+# Layer 2
+model.add(Convolution2D(256, 5, 5, border_mode='same'))
+model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
+
+# Layer 3
+model.add(ZeroPadding2D((1,1)))
+model.add(Convolution2D(512, 3, 3, border_mode='same'))
+model.add(Activation('relu'))
+
+# Layer 4
+model.add(ZeroPadding2D((1,1)))
+model.add(Convolution2D(1024, 3, 3, border_mode='same'))
+model.add(Activation('relu'))
+
+# Layer 5
+model.add(ZeroPadding2D((1,1)))
+model.add(Convolution2D(1024, 3, 3, border_mode='same'))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+# Layer 6
 model.add(Flatten())
-model.add(Dense(output_dim=100, init="glorot_uniform"))
-model.add(Activation("relu"))
-model.add(Dropout(p=0.5))
-model.add(Dense(output_dim=50, init="glorot_uniform"))
-model.add(Activation("relu"))
-model.add(Dropout(p=0.5))
-model.add(Dense(output_dim=num_class, init="glorot_uniform"))
-model.add(Activation("softmax"))
+model.add(Dense(3072, init='glorot_normal'))
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
 
-# print model.summary()
+# Layer 7
+model.add(Dense(4096, init='glorot_normal'))
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+
+# Layer 8
+model.add(Dense(34, init='glorot_normal'))
+model.add(Activation('softmax'))
+
+
+print model.summary()
 # quit()
 sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
 nb_epoch = NB_EPOCH
