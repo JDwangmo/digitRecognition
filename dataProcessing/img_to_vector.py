@@ -13,7 +13,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.DEBUG
                     )
 # 设置随机抽取的训练集中，每个字符数量的大小
-NUM_TRAIN = 10000
+NUM_TRAIN = 100
 # 设置随机抽取的测试集中，每个字符数量的大小
 NUM_TEST = 100
 

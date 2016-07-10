@@ -59,7 +59,7 @@ test_result = pd.DataFrame({
             'image_id':test_im_name
             })
 
-test_result_path = '/home/jdwang/PycharmProjects/digitRecognition/knn/result/20160426/' \
+test_result_path = '/home/jdwang/PycharmProjects/digitRecognition/knn/output/20160426/' \
                    'sklearn_knn_result_%d_%d.csv'%(num_train,num_test)
 test_result.to_csv(test_result_path,sep='\t')
 

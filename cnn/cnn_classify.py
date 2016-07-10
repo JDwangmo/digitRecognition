@@ -84,7 +84,7 @@ test_result = pd.DataFrame({
     'image_id': test_im_name
 })
 # 保存结果
-test_result_path = '/home/jdwang/PycharmProjects/digitRecognition/cnn/result/20160426/' \
+test_result_path = '/home/jdwang/PycharmProjects/digitRecognition/cnn/output/20160426/' \
                    'cnn_result_%depoch_%d_%d.csv' % (nb_epoch,num_train, num_test)
 test_result.to_csv(test_result_path, sep='\t')
 # 保存模型

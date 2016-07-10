@@ -12,7 +12,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.DEBUG
                     )
 NB_EPOCH = 5043
-num_train = 1000
+num_train = 100
 num_test = 100
 char_set = 3
 num_class = 34
@@ -57,6 +57,9 @@ test_y = np_utils.to_categorical(test_y,num_class)
 
 logging.debug( 'the shape of train sample:%d,%d,%d,%d'%(train_pix.shape))
 logging.debug( 'the shape of test sample:%d,%d,%d,%d'%(test_pix.shape))
+quit()
+from image_net_model import AlexNet
+AlexNet(num_labels=10)
 
 model = Sequential()
 win_shape = 3

@@ -9,6 +9,8 @@
 - Python: 2.7.6版本.
 - 
 
+### 数据：
+1. train_test_data/20160426/image_data.csv
 
 ## 项目架构
 
