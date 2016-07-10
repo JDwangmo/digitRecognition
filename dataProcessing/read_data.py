@@ -29,9 +29,9 @@ def load_pix(file_path,shape = (15,15),shuffle=True,normalize = True, char_set =
     if char_set == 1:
         character_name = sorted(list(set('0123456789')))
     elif char_set == 2:
-        character_name = sorted(list(set('ABCDEFGHIJKLMNOPQRSTUVWXYZ')))
+        character_name = sorted(list(set('ABCDEFGHIJKLMNPQRSTUWXYZ')))
     else:
-        character_name = sorted(list(set('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')))
+        character_name = sorted(list(set('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')))
 
     label = data[0].apply(lambda x:x[0]).as_matrix()
     y = np.asarray([character_name.index(item) for item in label])
@@ -59,6 +59,7 @@ def load_pix(file_path,shape = (15,15),shuffle=True,normalize = True, char_set =
     # pic = Image.fromarray(train_pix[0])
     # pic.save('test.bmp','bmp')
     logging.debug('完成加载文件并转换成矩阵，总共有%d个图片！'%(len(train_pix)))
+    y = y-1
     return train_pix,y,label,im_name
 
 if __name__=='__main__':

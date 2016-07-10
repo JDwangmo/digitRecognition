@@ -14,8 +14,8 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
 NB_EPOCH = 5043
 num_train = 100
 num_test = 1000
-char_set = 1
-num_class = 10
+char_set = 3
+num_class = 34
 
 train_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/20160426/' \
                   'train_%dcharset_%d.csv' % (char_set, num_train)
@@ -27,7 +27,8 @@ train_pix,train_y,train_label,train_im_name = load_pix(train_file_path,
                                            shape=image_shape,
                                            char_set = char_set
                                            )
-
+# print train_y
+# quit()
 test_pix,test_y,test_label,test_im_name = load_pix(test_file_path,
                                                    shape=image_shape,
                                                    char_set=char_set
@@ -88,6 +89,8 @@ model.add(Dropout(p=0.5))
 model.add(Dense(output_dim=num_class, init="glorot_uniform"))
 model.add(Activation("softmax"))
 
+# print model.summary()
+# quit()
 sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
 nb_epoch = NB_EPOCH
 model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics=["accuracy"])
@@ -101,7 +104,6 @@ model.fit(train_pix,
           shuffle=True,
           batch_size=100)
 # print model.get_weights()
-# print model.summary()
 end_time = timeit.default_timer()
 print 'train time : %f'%(end_time-start_time)
 
