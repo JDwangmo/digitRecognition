@@ -14,7 +14,7 @@
 
 
 ## 相关论文：
-1. [ImageNet Classification with Deep Convolutional Neural Networks](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/home/jdwang/Downloads/imagenet-classification-with-deep-convolutional-nn.pdf)
+1. [ImageNet Classification with Deep Convolutional Neural Networks](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/imagenet-classification-with-deep-convolutional-nn.pdf)
     - Alex Krizhevsky, NIPS 2012
 
 2. [Network In Network](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/1312.4400v3-Network-in-Network.pdf)
