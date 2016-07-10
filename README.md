@@ -14,5 +14,7 @@
 
 
 ## 相关论文：
-1. [Network In Network](https://raw.githubusercontent.com/JDwangmo/coprocessor/master/reference/1312.4400v3-Network-in-Network.pdf)
+1. [Network In Network](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/1312.4400v3-Network-in-Network.pdf)
     - M. Lin, Q. Chen, S. Yan，International Conference on Learning Representations, 2014 (arXiv:1409.1556)
+    - - **keywords:**
+    - 本文贡献：
