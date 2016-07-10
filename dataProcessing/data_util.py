@@ -79,4 +79,6 @@ if __name__ == '__main__':
     # dutil.img_to_vector()
     data_pic = dutil.load_pic('/home/jdwang/PycharmProjects/digitRecognition/dataProcessing/output/image_data.csv')
     print(data_pic.shape)
-    print(data_pic.head(2))
+    # print(data_pic.head(2))
+    print('|'.join(data_pic['LABEL'].value_counts().sort_index().index))
+    print('|'.join(str(item) for item in data_pic['LABEL'].value_counts().sort_index().values))
