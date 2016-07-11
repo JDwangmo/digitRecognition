@@ -173,7 +173,7 @@ class AlexNet(object):
         f1 = f1_score(test_y, y_pred.tolist(), average=None)
         logging.debug('F1为：%s' % (str(f1)))
         print('F1为：%s' % ('|'.join(['%f'%item for item in f1])))
-
+        print('---|'*len(self.num_labels))
         p = precision_score(test_y,y_pred,average=None)
         print('precision:%s'%(str(p)))
         logging.debug('precision:%s'%(str(p)))
@@ -185,7 +185,7 @@ class AlexNet(object):
 
         # a = accuracy_score(test_y,y_pred)
         # print('recall_score:%s'%(str(r)))
-        return accu,f1,p,r,y_pred
+        return accu,f1,p,r,is_correct,y_pred
 
     def save_model(self,path='./model.pkl'):
 

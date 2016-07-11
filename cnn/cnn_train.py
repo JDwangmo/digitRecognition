@@ -48,10 +48,10 @@ for (train_X,train_y),(test_X,test_y) in dutil.get_train_test():
     net.print_model_descibe()
 
     net.fit((train_X,train_y),(test_X,test_y))
-    _, _, _, _, y_pred = net.accuracy((test_X,test_y))
+    _, _, _, _,is_correct, y_pred = net.accuracy((test_X,test_y))
 
     # print(len(train_X))
-    pd.DataFrame(data={'LABEL':test_y,'PREDICT':y_pred}).to_csv(
+    pd.DataFrame(data={'LABEL':test_y,'PREDICT':y_pred,'CORRECT':is_correct}).to_csv(
         'result/result%d_%depoch.csv'%(counter,config['nb_epoch']),
         sep='\t',
         encoding='utf8',

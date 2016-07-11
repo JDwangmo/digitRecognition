@@ -12,7 +12,7 @@ cnn_train:
   
     verbose: 1
 
-    nb_epoch: 50
+    nb_epoch: 80
 
 
     log_file_path: [*project_path,'/log/',*date,'_',*name,'.log']
