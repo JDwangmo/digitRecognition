@@ -50,13 +50,13 @@ logging.debug( 'the shape of test sample:%d,%d,%d,%d'%(test_pix.shape))
 start_time = timeit.default_timer()
 win_shape = 2
 nb_epoch = NB_EPOCH
-cnn_model_architecture = '/home/jdwang/PycharmProjects/digitRecognition/cnn/model/' \
+cnn_model_architecture = '/home/jdwang/PycharmProjects/digitRecognition/cnn_model/model/' \
                          'cnn_model_architecture_%dtrain_%dwin_%depoch.json' \
                          % (num_train,win_shape, nb_epoch)
 logging.info('加载模型架构（%s）...'%cnn_model_architecture)
 
 model = model_from_json(open(cnn_model_architecture,'r').read())
-cnn_model_weights = '/home/jdwang/PycharmProjects/digitRecognition/cnn/model/' \
+cnn_model_weights = '/home/jdwang/PycharmProjects/digitRecognition/cnn_model/model/' \
                     'cnn_model_weights_%dtrain_%dwin_%depoch.h5' \
                     % (num_train,win_shape, nb_epoch)
 
@@ -84,7 +84,7 @@ test_result = pd.DataFrame({
     'image_id': test_im_name
 })
 # 保存结果
-test_result_path = '/home/jdwang/PycharmProjects/digitRecognition/cnn/output/20160426/' \
+test_result_path = '/home/jdwang/PycharmProjects/digitRecognition/cnn_model/output/20160426/' \
                    'cnn_result_%depoch_%d_%d.csv' % (nb_epoch,num_train, num_test)
 test_result.to_csv(test_result_path, sep='\t')
 # 保存模型

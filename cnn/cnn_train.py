@@ -33,12 +33,16 @@ logging.debug('='*20)
 # logging.debug( 'the shape of test sample:%d,%d,%d,%d'%(test_pix.shape))
 # quit()
 
-dutil = DataUtil(charset_type=0)
+dutil = DataUtil(charset_type=config['charset_type'])
+num_labels = len(dutil.index_to_character)
 
-from image_net_model import AlexNet
-num_labels = len(dutil.transform_chartype(charset_type=0))
-# print(num_labels)
+logging.debug('charset type 为：%s,字符数：%d'%(str(config['charset_type']),num_labels))
+print('charset type 为：%s,字符数：%d'%(str(config['charset_type']),num_labels))
+
+
+from cnn_model.image_net_model import AlexNet
 counter = 0
+
 for (train_X,train_y),(test_X,test_y) in dutil.get_train_test():
 
     net = AlexNet(verbose = config['verbose'],
@@ -52,11 +56,12 @@ for (train_X,train_y),(test_X,test_y) in dutil.get_train_test():
 
     # print(len(train_X))
     pd.DataFrame(data={'LABEL':test_y,'PREDICT':y_pred,'CORRECT':is_correct}).to_csv(
-        'result/result%d_%depoch.csv'%(counter,config['nb_epoch']),
+        'result/result%d_%depoch_%stype.csv'%(counter,config['nb_epoch'],config['charset_type']),
         sep='\t',
         encoding='utf8',
         index=False,
     )
+    quit()
     counter += 1
 
 

@@ -122,12 +122,12 @@ print 'train time : %f'%(end_time-start_time)
 # 保存模型
 json_string = model.to_json()
 # print json_string
-cnn_model_architecture = '/home/jdwang/PycharmProjects/digitRecognition/cnn/model/' \
+cnn_model_architecture = '/home/jdwang/PycharmProjects/digitRecognition/cnn_model/model/' \
                          'cnn_model_architecture_%dtrain_%dwin_%depoch.json' \
                          % (num_train,win_shape, nb_epoch)
 open(cnn_model_architecture, 'w').write(json_string)
 logging.info('模型架构保存到：%s'%cnn_model_architecture)
-cnn_model_weights = '/home/jdwang/PycharmProjects/digitRecognition/cnn/model/' \
+cnn_model_weights = '/home/jdwang/PycharmProjects/digitRecognition/cnn_model/model/' \
                     'cnn_model_weights_%dtrain_%dwin_%depoch.h5' \
                     % (num_train,win_shape, nb_epoch)
 model.save_weights(cnn_model_weights,overwrite=True)

@@ -51,6 +51,8 @@ class DataUtil(object):
         # print(charset)
         self.charset_type = charset_type
         self.index_to_character = charset
+        self.character_to_index = {j:i for i,j in enumerate(self.index_to_character)}
+
 
 
     def transform_chartype(self,charset_type):
@@ -217,13 +219,13 @@ class DataUtil(object):
             train_X = np.asarray(map(to_pic,train_X))
 
             train_X = train_X.reshape(train_X.shape[0],
-                                         1,
+                                      1,
                                       15,
                                       15)
             # print(train_X.shape)
             # quit()
 
-            train_y = np.asarray(train_data[u'LABEL'].map(character_to_index).as_matrix())
+            train_y = np.asarray(train_data[u'LABEL'].astype(dtype='str').map(character_to_index).as_matrix())
 
             test_data = self.load_pic('/home/jdwang/PycharmProjects/digitRecognition/dataProcessing/output/test%d_%stype.csv'%(batch_index,self.charset_type))
             test_X = test_data[u'PIC'].as_matrix()
@@ -236,13 +238,13 @@ class DataUtil(object):
 
             print(len(train_y))
             print(len(test_X))
-            test_y = np.asarray(test_data[u'LABEL'].map(character_to_index).as_matrix())
+            test_y = np.asarray(test_data[u'LABEL'].astype(dtype='str').map(character_to_index).as_matrix())
             # test_y = np_utils.to_categorical(test_y, num_class)
 
             yield (train_X,train_y),(test_X,test_y)
 
 if __name__ == '__main__':
-    dutil = DataUtil(charset_type=0)
+    dutil = DataUtil(charset_type='1I')
     # dutil.img_to_vector()
     # quit()
     data_pic = dutil.load_pic('/home/jdwang/PycharmProjects/digitRecognition/train_test_data/20160426_modify/image_data.csv')

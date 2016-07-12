@@ -1,9 +1,9 @@
-project_path: &project_path /home/jdwang/PycharmProjects/digitRecognition/cnn
+project_path: &project_path /home/jdwang/PycharmProjects/digitRecognition/cnn_model
 date: &date '20160711'
 
 #------------------------------------- cnn_train ----------------------------------------------
 cnn_train:
-    path: /home/jdwang/PycharmProjects/digitRecognition/cnn/cnn_train.py
+    path: /home/jdwang/PycharmProjects/digitRecognition/cnn_model/cnn_train.py
   
     # 描述
     describe: 使用CNN网络对图片进行分类
@@ -13,6 +13,8 @@ cnn_train:
     verbose: 1
 
     nb_epoch: 80
+
+    charset_type: 8B
 
 
     log_file_path: [*project_path,'/log/',*date,'_',*name,'.log']
