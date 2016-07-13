@@ -244,7 +244,7 @@ class DataUtil(object):
             yield (train_X,train_y),(test_X,test_y)
 
 if __name__ == '__main__':
-    dutil = DataUtil(charset_type='1I')
+    dutil = DataUtil(charset_type='0DQ')
     # dutil.img_to_vector()
     # quit()
     data_pic = dutil.load_pic('/home/jdwang/PycharmProjects/digitRecognition/train_test_data/20160426_modify/image_data.csv')

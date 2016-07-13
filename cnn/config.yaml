@@ -14,7 +14,7 @@ cnn_train:
 
     nb_epoch: 80
 
-    charset_type: 8B
+    charset_type: 0DQ
 
 
     log_file_path: [*project_path,'/log/',*date,'_',*name,'.log']
