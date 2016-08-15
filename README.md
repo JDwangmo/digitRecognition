@@ -64,3 +64,5 @@ cnn_train:
     - M. Lin, Q. Chen, S. Yan，International Conference on Learning Representations, 2014 (arXiv:1409.1556)
     - **keywords:**
     - 本文贡献：
+    
+3. [Deep-Convolutional-Network-for-Handwritten-Chinese-Character-Recognition.pdf](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/Deep-Convolutional-Network-for-Handwritten-Chinese-Character-Recognition.pdf.pdf)
