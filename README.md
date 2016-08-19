@@ -65,4 +65,12 @@ cnn_train:
     - **keywords:**
     - 本文贡献：
     
-3. [Deep-Convolutional-Network-for-Handwritten-Chinese-Character-Recognition.pdf](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/Deep-Convolutional-Network-for-Handwritten-Chinese-Character-Recognition.pdf.pdf)
+3. [Deep-Convolutional-Network-for-Handwritten-Chinese-Character-Recognition.pdf](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/Deep-Convolutional-Network-for-Handwritten-Chinese-Character-Recognition.pdf)
+    - Yuhao Zhang
+    - **keywords:** chinese character; 中文字符的识别; 卷积神经网络。
+    - In this project we explored the problem of recognizing handwritten Chinese characters. Specifically we use deep convolutional neural networks and achieved very impressive performance. We ran experiments on a 200-class and a 3755-class dataset using convolutional networks with different depth and filter numbers.**Our main findings are that for convolutional neural network with small filter sizes**: 
+        - 1) the deeper the network, the larger the accuracy; 
+        - 2) increas-ing the depth gives us diminishing returns in terms of ac-curacybut highly increases the difficulty of training; 
+        - 3) in-creasing the filter number in a moderate range can increase the accuracy; 
+        - 4) for networks with relatively few convolu-tional layers, the benefit of adding extra convolutional layer beats that of adding extra fully-connected layer. We also find that using model ensemble of networks with similar accuracies beats all single network.
+    

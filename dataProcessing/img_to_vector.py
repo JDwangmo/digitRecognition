@@ -89,5 +89,6 @@ for sub_dir in sub_dir_list:
                 # print pic_grey
                 # print pix.shape
 
+
 train_data_out.close()
 test_data_out.close()

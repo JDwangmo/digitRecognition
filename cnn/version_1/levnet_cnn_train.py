@@ -11,7 +11,7 @@ from keras.utils import np_utils
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.DEBUG
                     )
-NB_EPOCH = 5043
+NB_EPOCH = 32
 num_train = 1000
 num_test = 100
 char_set = 3
@@ -23,30 +23,42 @@ test_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/
                  'test_%dcharset_%d.csv' % (char_set, num_test)
 
 image_shape = (15,15)
-train_pix,train_y,train_label,train_im_name = load_pix(train_file_path,
-                                           shape=image_shape,
-                                           char_set = char_set
-                                           )
-# print train_y
-# quit()
-test_pix,test_y,test_label,test_im_name = load_pix(test_file_path,
-                                                   shape=image_shape,
-                                                   char_set=char_set
-                                                   )
-label = test_y
-train_pix = train_pix.reshape(train_pix.shape[0],
-                             1,
-                             train_pix.shape[1],
-                             train_pix.shape[2])
-test_pix = test_pix.reshape(test_pix.shape[0],
-                             1,
-                             test_pix.shape[1],
-                             test_pix.shape[2])
+# train_pix,train_y,train_label,train_im_name = load_pix(train_file_path,
+#                                            shape=image_shape,
+#                                            char_set = char_set
+#                                            )
+# # print train_y
+# # quit()
+# test_pix,test_y,test_label,test_im_name = load_pix(test_file_path,
+#                                                    shape=image_shape,
+#                                                    char_set=char_set
+#                                                    )
+# label = test_y
+# train_pix = train_pix.reshape(train_pix.shape[0],
+#                              1,
+#                              train_pix.shape[1],
+#                              train_pix.shape[2])
+# test_pix = test_pix.reshape(test_pix.shape[0],
+#                              1,
+#                              test_pix.shape[1],
+#                              test_pix.shape[2])
 
 # character_name = sorted(list(set('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')))
 # print character_name
 # 将y转换成one-hot编码
 # train_y = [character_name.index(item) for item in train_y]
+
+from train_test_data.dataset_20160801.data_util import DataUtil
+
+dutil = DataUtil()
+
+
+charset='8B'
+
+(train_pix,train_y),(test_pix,test_y) = dutil.load_train_test_data(
+    version=1,
+    charset=charset
+)
 
 train_y = np_utils.to_categorical(train_y,num_class)
 # test_y = [character_name.index(item) for item in test_y]
