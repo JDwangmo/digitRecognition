@@ -1,0 +1,19 @@
+﻿Python2.7.6开发环境
+python依赖包(使用 pip安装即可)：Keras,theano,h5py
+
+程序使用说明：
+
+需要控制的变量的有两个：CHOICE和data_dir（CHOICE ！= 1时，需要设置）
+
+
+一、逐张图片测试：
+1、设置 CHOICE = 1
+2、运行 predict.py 程序：
+
+二、批量图片测试：
+1、设置 CHOICE = 2
+2、将需要测试的图片放到 image_data 文件夹 中，每个字符一个 子文件夹：
+
+3、运行 predict.py 程序：
+如果出现badcase，并把结果存到 cnn_test_badcase.csv中，并把badcase图片存到 badcase 文件夹中。
+
