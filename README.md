@@ -67,11 +67,15 @@ cnn_train:
     
 3. [Deep-Convolutional-Network-for-Handwritten-Chinese-Character-Recognition.pdf](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/Deep-Convolutional-Network-for-Handwritten-Chinese-Character-Recognition.pdf)
     - Yuhao Zhang
-    - **keywords:** chinese character; 中文字符的识别; 卷积神经网络。
+    - **keywords:** chinese character; 中文字符的识别; 卷积神经网络，模型融合。
     - 主要围绕三个问题：
         1. How does **the depth of the network** influence the clas-sification accuracy? 
         2. How does **the number of filters** in the convlutional layers influence the classification accuracy? 
         3. Does **adding a convolutional layer help more or adding a fully-connected layer** help more in terms of the test accuracy? 
+    - 图片预处理：
+        - resizing, 
+        - contrast maximization ：forced the image to have values ranging from 0 to 255
+        - image mean subtraction. Given a raw input image describing
     - 结论：
         - In this project we explored the problem of recognizing handwritten Chinese characters. Specifically we use deep convolutional neural networks and achieved very impressive performance. We ran experiments on a 200-class and a 3755-class dataset using convolutional networks with different depth and filter numbers.**Our main findings are that for convolutional neural network with small filter sizes**: 
             - 1) the deeper the network, the larger the accuracy; 
@@ -79,3 +83,7 @@ cnn_train:
             - 3) increasing the filter number in a moderate range can increase the accuracy; 
             - 4) for networks with relatively few convolu-tional layers, the benefit of adding extra convolutional layer beats that of adding extra fully-connected layer. We also find that using model ensemble of networks with similar accuracies beats all single network.
     
+4. [Multi-Column Deep Neural Networks for Offline Handwritten Chinese Character Classification](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/Multi-Column-Deep-Neural-Networks-for-Offline-Handwritten-Chinese-Character-Classification.pdf)
+    - Dan Cires ̧an and J ̈urgen Schmidhube,arXiv:1309.0261v,2013.9
+    - **keywords:** 模型融合;中文字符的识别; 卷积神经网络。
+    - 整理模型的方法不错。
