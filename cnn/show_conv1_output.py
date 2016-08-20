@@ -20,9 +20,9 @@ with open(conv1_output_file_path) as fin:
     conv1_output = test_predict[1]
     print(test_X.shape)
     print(conv1_output.shape)
-    print(test_X[-1])
+    # print(test_X[-1])
     # quit()
-    image_index = -10
+    image_index = 10
     plt.subplot(6, 1, 1)
     dst = test_X[image_index][0]
     plt.imshow(dst, cmap='gray', interpolation='bicubic')
@@ -34,6 +34,7 @@ with open(conv1_output_file_path) as fin:
         plt.imshow(dst, cmap='gray', interpolation='bicubic')
         # print(dst)
         plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
+        # print(dst*255)
 
     # plt.subplot(5,5,2)
     # dst = conv1_output[1].reshape(10,8,8)[0]
@@ -41,4 +42,6 @@ with open(conv1_output_file_path) as fin:
     # print(dst)
     # plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
     plt.show()
+    plt.clf()
+    plt.close()
     # print(conv1_output[0].reshape(1,19,19))
