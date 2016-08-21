@@ -86,4 +86,12 @@ cnn_train:
 4. [Multi-Column Deep Neural Networks for Offline Handwritten Chinese Character Classification](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/Multi-Column-Deep-Neural-Networks-for-Offline-Handwritten-Chinese-Character-Classification.pdf)
     - Dan Cires ̧an and J ̈urgen Schmidhube,arXiv:1309.0261v,2013.9
     - **keywords:** 模型融合;中文字符的识别; 卷积神经网络。
-    - 整理模型的方法不错。
+    - 整理模型的方法和图不错。    
+    
+5. [Transfer Learning for Latin and Chinese Characters with Deep Neural Networks](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/Transfer-Learning-for-Latin-and-Chinese-Characters-with-Deep-Neural-Networks.pdf)
+    - 
+    - **keywords:** 。
+        
+6. [Convolutional Neural Network Committees For Handwritten Character Classification](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/Convolutional-Neural-Network-Committees-For-Handwritten-Character-Classification.pdf)
+    - 
+    - **keywords:** 模型
