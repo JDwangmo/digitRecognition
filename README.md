@@ -1,5 +1,6 @@
 # digitRecognition
 ###Digit Recognition
+####[Digit Recognition C语言实现版本](https://github.com/JDwangmo/digitRecognition_C)
 
 ### summary:
 1. 
@@ -93,7 +94,7 @@ cnn_train:
     - **keywords:** Trasnfer Learning(迁移学习)。
     - 挺不错一篇论文，实验方案和方法很非常详细和清晰，值得借鉴。
     - 训练过程中对图片进行 distortion（扭曲）/ deformed（变形）：`P2-left` During training a given dataset is continually deformed **prior to each epoch of an online learning algorithm**. Deformations are stochastic and applied to each image during training, using random but bounded values for **translation, rotation and scaling**. These distortions allow us to train DNN with many free parameters without overfitting and greatly improve generalization performance. Training stops when either the validation error becomes 0, the learning rate reaches its predefined minimum or there is no improvement on the validation set for 50 consecutive epochs. The undistorted, original training set is used as validation set (使用没有扭曲的训练集图片做验证集)。
-    - 迁移学习的思想： Is learning the n-th thing any easier than learning the first? 可以举出很多例子，比如如果你学会骑单车，那么将会更容易学会开摩托等等。
+    - 迁移学习的思想： **Is learning the n-th thing any easier than learning the first? 相关学习经历对学习新任务有很大的帮助**。可以举出很多例子，比如如果你学会骑单车，那么将会更容易学会开摩托等等。
     - 迁移学习方案：
         - A. Latin characters: from digits to uppercase letters ：通过比较随机初始化和使用数字训练出来的权重初始化，发现确实有帮助。
         - B. Learning uppercase letters from few samples per class：通过比较不同的训练集大小，发现小训练集下， pre-training 效果更加明显。
@@ -107,4 +108,4 @@ cnn_train:
     
 6. [Convolutional Neural Network Committees For Handwritten Character Classification](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/Convolutional-Neural-Network-Committees-For-Handwritten-Character-Classification.pdf)
     - 
-    - **keywords:** 模型
+    - **keywords:** 模型融合

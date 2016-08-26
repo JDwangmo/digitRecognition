@@ -50,7 +50,7 @@ save_vector=True):
                     # quit()
                     # fout.write( u'%s\t%s\t%s\n' %(sub_dir ,sub_dir + '/' + train_file, pic_grey))
 
-    print('测试个数：%d'(len(X)))
+    # print('测试个数：%d'(len(X)))
     X = np.asarray(X).reshape(-1,1,15,15)
     y= np.asarray(y,dtype=int)
     # print(X.shape)
