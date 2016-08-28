@@ -66,7 +66,7 @@ cnn_train:
     - **keywords:**
     - 本文贡献：
     
-3. [Deep-Convolutional-Network-for-Handwritten-Chinese-Character-Recognition.pdf](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/Deep-Convolutional-Network-for-Handwritten-Chinese-Character-Recognition.pdf)
+3. [Deep Convolutional Network for Handwritten Chinese Character Recognition](https://raw.githubusercontent.com/JDwangmo/digitRecognition/master/reference/Deep-Convolutional-Network-for-Handwritten-Chinese-Character-Recognition.pdf)
     - Yuhao Zhang
     - **keywords:** chinese character; 中文字符的识别; 卷积神经网络，模型融合。
     - 主要围绕三个问题：

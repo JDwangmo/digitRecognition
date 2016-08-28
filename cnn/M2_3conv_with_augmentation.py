@@ -1,9 +1,9 @@
 # encoding=utf8
 """
     Author:  'jdwang'
-    Date:    'create date: 2016-08-15'
+    Date:    'create date: 2016-08-28'
     Email:   '383287471@qq.com'
-    Describe:
+    Describe: 使用 data augmentation 的 三种卷积核的 M2 CNNN 模型
 """
 from __future__ import print_function
 from train_test_data.dataset_20160801.data_util import DataUtil
@@ -14,7 +14,7 @@ log_output_file=sys.stdout
 
 charset='8B'
 version=2
-image_feature_shape = (15,8)
+image_feature_shape = (15,15)
 badcase_file_path = '/home/jdwang/PycharmProjects/digitRecognition/cnn/result/badcase_%s.pickle'%charset
 result_file_path = '/home/jdwang/PycharmProjects/digitRecognition/cnn/result/result_%s.pickle'%charset
 
@@ -44,16 +44,19 @@ ImageCNN.cross_validation(
     result_file_path = result_file_path,
     log_output_file=log_output_file,
     num_labels = 2,
-    # num_filter_list=[20,32,64,100,128],
-    num_filter_list=[64],
-    # hidden1_list=[10,100,300,500,1000],
-    hidden1_list=[100],
+    num_filter_list=[20,32,64,100,128],
+    # num_filter_list=[64],
+    hidden1_list=[10,100,300,500,1000],
+    # hidden1_list=[100],
     # filter1_list=[1,2,3],
     filter1_list=[3],
     # filter2_list=[4,5,6],
     filter2_list=[5],
     # filter3_list=[8,9],
     filter3_list=[7],
-    verbose=1,
-    data_augmentation = False,
+    verbose=0,
+    # 设置数据增强（变换）
+    data_augmentation=True,
+    # 设置是否进行验证
+    need_validation =True,
 )
