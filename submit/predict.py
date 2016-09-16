@@ -416,13 +416,15 @@ else:
             # print(weight[0][0])
             # quit()
             for item in in_data.flatten():
-                fout.write(struct.pack('f', item))
+                print(item,ord(chr(item)))
+                fout.write(struct.pack('c', chr(item)))
+            quit()
 
     with open('/home/jdwang/PycharmProjects/digitRecognition/submit/input_data2_label.mat', 'wb') as fout:
         fout.write(struct.pack('i', len(test_y)))
         for item in test_y:
             fout.write(struct.pack('i', item))
-
+    quit()
     # test_X,test_y = load_pic('./data_vector.pickle')
     # print(test_y)
     # test_Xx = test_X[:,:,11::, 0:5]
