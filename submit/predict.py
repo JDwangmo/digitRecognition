@@ -12,12 +12,11 @@ CHOICE = 2
 # 设置图片文件夹
 # data_dir='./image_data/'
 # data_dir='/home/jdwang/PycharmProjects/digitRecognition/image_data/newData_20160801/'
-data_dir='/home/jdwang/PycharmProjects/digitRecognition/image_data/20160426_modify/'
-
+data_dir = '/home/jdwang/PycharmProjects/digitRecognition/image_data/20160426_modify/'
 
 import csv
 import struct
-from keras.layers import Convolution2D,Activation,MaxPooling2D,Flatten,Merge,Dense,Dropout
+from keras.layers import Convolution2D, Activation, MaxPooling2D, Flatten, Merge, Dense, Dropout
 from keras import backend as K
 from keras.models import Sequential
 from keras.optimizers import SGD
@@ -25,30 +24,25 @@ from keras.utils import np_utils
 import numpy as np
 import Image
 
+
 class DigitRecognizationModel(object):
-
-
     def __init__(self):
         nkerns1 = [3, 5, 7]
         nkerns2 = [1, 2, 3]
-        root_path ='./model/'
+        root_path = './model/'
         # 34 class
-        self.model_all,self.conv1_output = self.load_cnn_model(
-            root_path+'25_0_0_400_0_lr0.001_0model_weights_25-400_firstCNN_final.h5',
+        self.model_all, self.conv1_output = self.load_cnn_model(
+            root_path + '25_0_0_400_0_lr0.001_0model_weights_25-400_firstCNN_final.h5',
             nb_classes=34,
-            input_shape=(15,15),
+            input_shape=(15, 15),
             layer1=25,
             hidden1=400,
             nkerns=nkerns1,
         )
 
-        # self.save_cnn_weight_to_bininary_file(self.model_all,file_name='model_all_weight.mat')
+        self.save_cnn_weight_to_bininary_file(self.model_all, file_name='model_all_weight.mat')
 
-
-
-
-
-
+        return
 
         # 0D
         self.model_binary_0D, self.conv1_output = self.load_cnn_model(
@@ -65,8 +59,8 @@ class DigitRecognizationModel(object):
 
 
         # 1I
-        self.model_binary_1I,self.conv1_output = self.load_cnn_model(
-            root_path+'32_0_0_300_0_lr0.001_0model_weights_1-18_final.h5',
+        self.model_binary_1I, self.conv1_output = self.load_cnn_model(
+            root_path + '32_0_0_300_0_lr0.001_0model_weights_1-18_final.h5',
             nb_classes=2,
             input_shape=(8, 15),
             layer1=32,
@@ -74,21 +68,21 @@ class DigitRecognizationModel(object):
             nkerns=nkerns1,
         )
 
-        self.save_cnn_weight_to_bininary_file(self.model_binary_1I,'model_1I_weight.mat')
+        self.save_cnn_weight_to_bininary_file(self.model_binary_1I, 'model_1I_weight.mat')
         # return
         # 2Z
-        self.model_binary_2Z,conv1_output = self.load_cnn_model(
-            root_path+'32_0_0_800_0_lr0.001_0model_weights_2-33_final.h5',
+        self.model_binary_2Z, conv1_output = self.load_cnn_model(
+            root_path + '32_0_0_800_0_lr0.001_0model_weights_2-33_final.h5',
             nb_classes=2,
             input_shape=(8, 15),
             layer1=32,
             hidden1=800,
             nkerns=nkerns1,
         )
-        self.save_cnn_weight_to_bininary_file(self.model_binary_2Z,'model_2Z_weight.mat')
+        self.save_cnn_weight_to_bininary_file(self.model_binary_2Z, 'model_2Z_weight.mat')
 
         # 56
-        self.model_binary_56,conv1_output = self.load_cnn_model(
+        self.model_binary_56, conv1_output = self.load_cnn_model(
             root_path + '32_0_0_600_0_lr0.001_0model_weights_5-6_1&4_final.h5',
             nb_classes=2,
             input_shape=(8, 8),
@@ -96,12 +90,10 @@ class DigitRecognizationModel(object):
             hidden1=600,
             nkerns=nkerns1,
         )
-        self.save_cnn_weight_to_bininary_file(self.model_binary_56,'model_56_weight.mat')
-
-
+        self.save_cnn_weight_to_bininary_file(self.model_binary_56, 'model_56_weight.mat')
 
         # 8B
-        self.model_binary_8B,conv1_output = self.load_cnn_model(
+        self.model_binary_8B, conv1_output = self.load_cnn_model(
             root_path + '32_0_0_600_0_lr0.001_0model_weights_8-11_final.h5',
             nb_classes=2,
             input_shape=(15, 8),
@@ -109,10 +101,10 @@ class DigitRecognizationModel(object):
             hidden1=600,
             nkerns=nkerns1,
         )
-        self.save_cnn_weight_to_bininary_file(self.model_binary_8B,'model_8B_weight.mat')
+        self.save_cnn_weight_to_bininary_file(self.model_binary_8B, 'model_8B_weight.mat')
 
         character_name = list('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')
-        self.index_to_char = lambda x:character_name[x]
+        self.index_to_char = lambda x: character_name[x]
 
         # 4A
 
@@ -137,34 +129,52 @@ class DigitRecognizationModel(object):
             nkerns=None
     ):
         lr = 1e-3
-        model,conv1_output = self.net_model(layer1,
-                               hidden1,
-                               input_shape[0],
-                               input_shape[1],
-                               nkerns=nkerns,
-                               nb_classes=nb_classes,
-                               lr=lr
-                               )
+        model, conv1_output = self.net_model(layer1,
+                                             hidden1,
+                                             input_shape[0],
+                                             input_shape[1],
+                                             nkerns=nkerns,
+                                             nb_classes=nb_classes,
+                                             lr=lr
+                                             )
         self.conv1_output = conv1_output
         model.load_weights(weights_path)
-        return model,conv1_output
+        return model, conv1_output
 
-    def save_cnn_weight_to_bininary_file(self,model,file_name):
+    def save_cnn_weight_to_bininary_file(self, model, file_name):
         model_weights = model.get_weights()
         # print(model_weights)
         # print(len(model_weights))
 
-        with open('/home/jdwang/PycharmProjects/digitRecognition/submit/'+file_name, 'wb') as fout:
+        with open('/home/jdwang/PycharmProjects/digitRecognition/submit/' + file_name, 'wb') as fout:
+            count = 0
             for weight in model_weights:
                 print(weight.shape)
                 # print(weight[0][0])
-                # quit()
-                for s in weight.shape:
-                    fout.write(struct.pack('i', s))
+                fout = open('weight/weight%d.txt' % count, 'w')
+                fout.write('%s\n'%str(weight.shape))
+                weight1 = weight.reshape(weight.shape[0], -1)
+                # print(weight1[0])
+                if len(weight.shape)==4:
+                    # conv weight,reverse
+                    weight1 = np.asarray([item[-1::-1] for item in weight1])
+                if len(weight.shape)==2:
+                    # fc1 weight,reverse
 
-                for item in weight.flatten():
-                    fout.write(struct.pack('f', item))
-
+                    weight1 = np.transpose(weight1)
+                    # print(weight1[0])
+                np.savetxt(fout,
+                           weight1,
+                           fmt='%f',
+                           delimiter=',')
+                count += 1
+                # for s in weight.shape:
+                #     fout.write(struct.pack('i', s))
+                #
+                # for item in weight.flatten():
+                #     fout.write(struct.pack('f', item))
+                fout.close()
+            quit()
 
     def cnn_binary_predict(self,
                            test_X,
@@ -197,13 +207,13 @@ class DigitRecognizationModel(object):
 
     def outPutImage(self, root_dir='./badcase/',
                     badcase=None):  # 将badcase的图片输出到Badcase的文件夹中
-        X,y = badcase
+        X, y = badcase
         for i in range(0, len(X)):
             # print(i)
             img = Image.fromarray(X[i, 0, :, :])
-            img.save(root_dir +str(i)+'|'+'预测为' +self.index_to_char(y[i]) + '.jpg')
+            img.save(root_dir + str(i) + '|' + '预测为' + self.index_to_char(y[i]) + '.jpg')
 
-    def batch_predict(self,test_X,test_y,verbose=1):
+    def batch_predict(self, test_X, test_y, verbose=1):
         # 批量预测
         # 34分类预测
         # test_y = np_utils.to_categorical(test_y,34)
@@ -211,6 +221,7 @@ class DigitRecognizationModel(object):
             [test_X, test_X, test_X],
             verbose=0
         )
+
         # print(predicted)
         index_0_13 = []
         index_1_18 = []
@@ -277,7 +288,7 @@ class DigitRecognizationModel(object):
             )
             predicted[index_8_11] = binary_predicted
 
-        if verbose>0:
+        if verbose > 0:
             # >0 返回更详细信息
             pass
         else:
@@ -298,26 +309,26 @@ class DigitRecognizationModel(object):
                 spamwriter.writerow([i, self.index_to_char(predicted[i]), self.index_to_char(test_y[i])])
                 index.append(i)
         csvfile.close()
-        print('准确率为：%f'%(test_accuracy))
-        if len(test_X[index])==0:
+        print('准确率为：%f' % (test_accuracy))
+        if len(test_X[index]) == 0:
             print('没有basecase！')
         else:
-            print('basecase有:%d个'%(len(test_X[index])))
+            print('basecase有:%d个' % (len(test_X[index])))
             print('已经保存到文件中：cnn_test_badcase.csv')
             # 将错误结果的图片输出到Badcase的文件夹中
             self.outPutImage(root_dir='./badcase/',
-                             badcase = (test_X[index],predicted[index]))
-        return test_accuracy,predicted  # 返回最终测试的准确率
+                             badcase=(test_X[index], predicted[index]))
+        return test_accuracy, predicted  # 返回最终测试的准确率
 
-    def predict(self,image_path):
+    def predict(self, image_path):
         # 识别一张图片
         pic = Image.open(open(image_path))
-        pix = np.asarray(pic).reshape(1,1,15,15)
+        pix = np.asarray(pic).reshape(1, 1, 15, 15)
         # print(pix)
         result = self.batch_predict(pix,
-                           None,
-                           verbose=0)
-        print('预测结果为：%s'%(self.index_to_char(result)))
+                                    None,
+                                    verbose=0)
+        print('预测结果为：%s' % (self.index_to_char(result)))
 
     def net_model(self, layer1, hidden1, rows, cols, nkerns, nb_classes, lr=0.01, decay=1e-6, momentum=0.9):
         layer1_model1 = Sequential()
@@ -336,7 +347,6 @@ class DigitRecognizationModel(object):
         layer1_model2.add(Activation('tanh'))
         layer1_model2.add(MaxPooling2D(pool_size=(2, 2)))
         layer1_model2.add(Flatten())  # 平铺
-
 
         layer1_model3 = Sequential()
         layer1_model3.add(Convolution2D(layer1, nkerns[2], nkerns[2],
@@ -359,6 +369,7 @@ class DigitRecognizationModel(object):
         model.add(Activation('softmax'))
 
         model.summary()
+
         conv1_output = K.function(inputs=[
             layer1_model1.layers[0].input,
             layer1_model2.layers[0].input,
@@ -369,29 +380,36 @@ class DigitRecognizationModel(object):
                 layer1_model1.layers[0].output,
                 layer1_model2.layers[0].output,
                 layer1_model3.layers[0].output,
+                layer1_model1.layers[1].output,
+                layer1_model2.layers[1].output,
+                layer1_model3.layers[1].output,
+                layer1_model1.layers[2].output,
+                layer1_model2.layers[2].output,
+                layer1_model3.layers[2].output,
+                model.layers[-6].output,
+                model.layers[-5].output,
+                model.layers[-4].output,
+                model.layers[-3].output,
                 model.layers[-2].output,
                 model.layers[-1].output,
             ]
         )
 
-
-
-
         sgd = SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)
         model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=["accuracy"])
 
-        return model,conv1_output
+        return model, conv1_output
 
 
+from submit.data_util import load_pic, img_to_vector
 
-from submit.data_util import load_pic,img_to_vector
 # 加载模型
 model = DigitRecognizationModel()
 # quit()
 # ==1, 则是单图片测试
 # !=1, 批量预测
 choice = CHOICE
-if choice==1:
+if choice == 1:
     # 单图片测试
     print('逐张图片测试：')
     while True:
@@ -400,12 +418,12 @@ if choice==1:
 else:
     # 批量预测
     # 读取数据
-    print('=='*20)
+    print('==' * 20)
     print('加载数据。。')
-    print('=='*20)
+    print('==' * 20)
     # 设置图片路径
-    test_X,test_y = img_to_vector(data_dir=data_dir,
-                                  save_vector=False,)
+    test_X, test_y = img_to_vector(data_dir=data_dir,
+                                   save_vector=False, )
     # print(test_X[0])
     # 将图片保存成 二进制 形式
     with open('/home/jdwang/PycharmProjects/digitRecognition/submit/input_data2.mat', 'wb') as fout:
@@ -416,20 +434,21 @@ else:
             # print(weight[0][0])
             # quit()
             for item in in_data.flatten():
-                print(item,ord(chr(item)))
+                # print(item,ord(chr(item)))
                 fout.write(struct.pack('c', chr(item)))
-            quit()
+                # quit()
 
     with open('/home/jdwang/PycharmProjects/digitRecognition/submit/input_data2_label.mat', 'wb') as fout:
         fout.write(struct.pack('i', len(test_y)))
         for item in test_y:
             fout.write(struct.pack('i', item))
-    quit()
     # test_X,test_y = load_pic('./data_vector.pickle')
     # print(test_y)
     # test_Xx = test_X[:,:,11::, 0:5]
     # layer_output = model.conv1_output([test_Xx,test_Xx,test_Xx,0])
-    test_accuracy, y_pred = model.batch_predict(test_X,test_y)
+
+    test_accuracy, y_pred = model.batch_predict(test_X, test_y)
+    quit()
     with open('/home/jdwang/PycharmProjects/digitRecognition/submit/input_data_label_pred.mat', 'wb') as fout:
         fout.write(struct.pack('i', len(y_pred)))
         for item in y_pred:
@@ -442,5 +461,4 @@ else:
     quit()
     print('==' * 20)
     print('预测中。。')
-    model.batch_predict(test_X,test_y)
-
+    model.batch_predict(test_X, test_y)
