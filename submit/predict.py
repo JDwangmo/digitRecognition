@@ -11,8 +11,8 @@
 CHOICE = 2
 # 设置图片文件夹
 # data_dir='./image_data/'
-# data_dir='/home/jdwang/PycharmProjects/digitRecognition/image_data/newData_20160801/'
-data_dir = '/home/jdwang/PycharmProjects/digitRecognition/image_data/20160426_modify/'
+data_dir='/home/jdwang/PycharmProjects/digitRecognition/image_data/newData_20160801/'
+# data_dir = '/home/jdwang/PycharmProjects/digitRecognition/image_data/20160426_modify/'
 
 import csv
 import struct
@@ -55,8 +55,6 @@ class DigitRecognizationModel(object):
         )
 
         # self.save_cnn_weight_to_bininary_file(self.model_binary_0D,'model_0D_weight.mat')
-
-
 
         # 1I
         self.model_binary_1I, self.conv1_output = self.load_cnn_model(
@@ -151,7 +149,7 @@ class DigitRecognizationModel(object):
             for weight in model_weights:
                 print(weight.shape)
                 # print(weight[0][0])
-                fout = open('weight/weight%d.txt' % count, 'w')
+                fout = open('weight/int_weight%d.txt' % count, 'w')
                 fout.write('%s\n'%str(weight.shape))
                 weight1 = weight.reshape(weight.shape[0], -1)
                 # print(weight1[0])
@@ -164,8 +162,8 @@ class DigitRecognizationModel(object):
                     weight1 = np.transpose(weight1)
                     # print(weight1[0])
                 np.savetxt(fout,
-                           weight1,
-                           fmt='%f',
+                           weight1*1e6,
+                           fmt='%i',
                            delimiter=',')
                 count += 1
                 # for s in weight.shape:
@@ -222,7 +220,7 @@ class DigitRecognizationModel(object):
             verbose=0
         )
 
-        # print(predicted)
+        print(np.mean(predicted==test_y))
         index_0_13 = []
         index_1_18 = []
         index_2_33 = []
@@ -426,7 +424,7 @@ else:
                                    save_vector=False, )
     # print(test_X[0])
     # 将图片保存成 二进制 形式
-    with open('/home/jdwang/PycharmProjects/digitRecognition/submit/input_data2.mat', 'wb') as fout:
+    with open('/home/jdwang/PycharmProjects/digitRecognition/submit/images_data1.mat', 'wb') as fout:
         print(test_X.shape)
         fout.write(struct.pack('i', len(test_X)))
 
@@ -438,10 +436,10 @@ else:
                 fout.write(struct.pack('c', chr(item)))
                 # quit()
 
-    with open('/home/jdwang/PycharmProjects/digitRecognition/submit/input_data2_label.mat', 'wb') as fout:
+    with open('/home/jdwang/PycharmProjects/digitRecognition/submit/labels_data1.mat', 'wb') as fout:
         fout.write(struct.pack('i', len(test_y)))
         for item in test_y:
-            fout.write(struct.pack('i', item))
+            fout.write(struct.pack('c', chr(item)))
     # test_X,test_y = load_pic('./data_vector.pickle')
     # print(test_y)
     # test_Xx = test_X[:,:,11::, 0:5]

@@ -36,20 +36,24 @@ save_vector=True):
             # print '字符(%s)的sample个数为：%d'%(sub_dir,len(file_list))
             # print rand_train_list
             # print rand_test_list
-            for train_file in file_list:
+            for train_file in np.random.RandomState(0).permutation(file_list)[:100]:
                 with open(data_dir + sub_dir + '/' + train_file) as fin:
-                    pic = Image.open(fin)
-                    pix = np.asarray(pic)
-                    # print pix
-                    # reshape the matrix'size to (1,225)
-                    X.append(pix)
-                    y.append(char_to_index(sub_dir))
-                    image_id.append(sub_dir + '/' + train_file)
-                    # pic_grey = ','.join([str(item) for item in pix])
-                    # print(sub_dir+'\t'+sub_dir + '/' + train_file + '\t' + pic_grey)
-                    # quit()
-                    # fout.write( u'%s\t%s\t%s\n' %(sub_dir ,sub_dir + '/' + train_file, pic_grey))
-
+                    try:
+                        # if train_file =='201607121951223362.bmp':
+                        #     pass
+                        pic = Image.open(fin)
+                        pix = np.asarray(pic)
+                        # print pix
+                        # reshape the matrix'size to (1,225)
+                        X.append(pix)
+                        y.append(char_to_index(sub_dir))
+                        image_id.append(sub_dir + '/' + train_file)
+                        # pic_grey = ','.join([str(item) for item in pix])
+                        # print(sub_dir+'\t'+sub_dir + '/' + train_file + '\t' + pic_grey)
+                        # quit()
+                        # fout.write( u'%s\t%s\t%s\n' %(sub_dir ,sub_dir + '/' + train_file, pic_grey))
+                    except:
+                        print('load error:%s'%(data_dir + sub_dir + '/' + train_file))
     # print('测试个数：%d'(len(X)))
     X = np.asarray(X).reshape(-1,1,15,15)
     y= np.asarray(y,dtype=int)
