@@ -11,6 +11,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import Normalizer, StandardScaler
 import numpy as np
 
+
 class KnnBinaryClassifier(object):
     def __init__(self):
         pass
@@ -71,8 +72,10 @@ class KnnBinaryClassifier(object):
         print(test_y)
         print(sum(test_pred != test_y))
         print(np.arange(len(test_pred))[test_pred != test_y])
-        print(test_pred[test_pred != test_y])
+        print('真实值')
         print(test_y[test_pred != test_y])
+        print('预测值')
+        print(test_pred[test_pred != test_y])
 
 
 def binary_classifier_0D(dataset='2-1'):
@@ -80,7 +83,8 @@ def binary_classifier_0D(dataset='2-1'):
         取局部特征预测 —— 取图片左半边，右半边基本一样
     :return: None
     """
-    (train_X, train_y), (val_X, val_y), (test_X, test_y) = DataUtil.load_train_test_data(option=dataset, binary_classes='0D')
+    (train_X, train_y), (val_X, val_y), (test_X, test_y) = DataUtil.load_train_test_data(option=dataset,
+                                                                                         binary_classes='0D')
     # DataUtil.show_image(test_X[-1,0])
 
     # 取图片左半边，右半边基本一样
@@ -96,15 +100,17 @@ def binary_classifier_0D(dataset='2-1'):
         preprocessing_option=1,
     )
 
+
 def binary_classifier_1I(dataset='2-1'):
     """预测二分类 1-I 的分类情况
         取局部特征预测 —— 取图片上半边，下半边基本一样
     :return: None
     """
-    (train_X, train_y), (val_X, val_y), (test_X, test_y) = DataUtil.load_train_test_data(option=dataset, binary_classes='1I')
+    (train_X, train_y), (val_X, val_y), (test_X, test_y) = DataUtil.load_train_test_data(option=dataset,
+                                                                                         binary_classes='1I')
     # DataUtil.show_image(test_X[-1,0])
     # DataUtil.show_image(test_X[0,0])
-    DataUtil.show_image(test_X[81,0])
+    DataUtil.show_image(test_X[81, 0])
     # print(test_X[-1,0])
 
     # 取图片上半边，下半边基本一样
@@ -125,14 +131,46 @@ def binary_classifier_1I(dataset='2-1'):
     )
 
 
-def binary_classifer(dataset='2-1',option='0D'):
+def binary_classifier_4A(dataset='2-1'):
+    """预测二分类 1-I 的分类情况
+        取局部特征预测 —— 取图片上半边，下半边基本一样
+    :return: None
+    """
+    (train_X, train_y), (val_X, val_y), (test_X, test_y) = DataUtil.load_train_test_data(option=dataset,
+                                                                                         binary_classes='4A')
+    # DataUtil.show_image(test_X[-1,0])
+    # DataUtil.show_image(test_X[0,0])
+    # DataUtil.show_image(test_X[3113,0])
+    # print(test_X[-1,0])
 
+    # 取图片上半边，下半边基本一样
+    train_X = train_X[:, :, :, :]
+    val_X = val_X[:, :, :, :]
+    test_X = test_X[:, :, :, :]
+
+    # DataUtil.show_image(test_X[-1,0])
+    DataUtil.show_image(test_X[3113,0])
+    # print(test_X[-1,0])
+
+    model = KnnBinaryClassifier()
+    model.fit(
+        (train_X, train_y),
+        (val_X, val_y),
+        (test_X, test_y),
+        preprocessing_option=1,
+    )
+
+
+def binary_classifer(dataset='2-1', option='0D'):
     if option == '0D':
         binary_classifier_0D(dataset=dataset)
     elif option == '1I':
         binary_classifier_1I(dataset=dataset)
+    elif option == '4A':
+        binary_classifier_4A(dataset=dataset)
     else:
         raise NotImplementedError
 
+
 if __name__ == '__main__':
-    binary_classifer(dataset='2-1',option='1I')
+    binary_classifer(dataset='2-1', option='4A')
