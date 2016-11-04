@@ -62,6 +62,21 @@ class DataUtil:
         elif option == '2-5':
             root_path = '/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/dataset20161102'
             path = os.path.join(root_path, 'TrainSet&TestSet_3400_avgValandTest_data5.pickle')
+        elif option == '3-1':
+            root_path = '/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/dataset20161104'
+            path = os.path.join(root_path, 'TrainSet&TestSet_3400_avgValandTest_data1.pickle')
+        elif option == '3-2':
+            root_path = '/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/dataset20161104'
+            path = os.path.join(root_path, 'TrainSet&TestSet_3400_avgValandTest_data2.pickle')
+        elif option == '3-3':
+            root_path = '/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/dataset20161104'
+            path = os.path.join(root_path, 'TrainSet&TestSet_3400_avgValandTest_data3.pickle')
+        elif option == '3-4':
+            root_path = '/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/dataset20161104'
+            path = os.path.join(root_path, 'TrainSet&TestSet_3400_avgValandTest_data4.pickle')
+        elif option == '3-5':
+            root_path = '/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/dataset20161104'
+            path = os.path.join(root_path, 'TrainSet&TestSet_3400_avgValandTest_data5.pickle')
         else:
             raise NotImplementedError
 
@@ -100,7 +115,6 @@ class DataUtil:
         :return: None
         """
         image = Image.fromarray(image_array)
-        image.save('/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/badcase/1.bmp')
         image.show()
 
     @staticmethod
@@ -142,13 +156,13 @@ class DataUtil:
 
         # endregion
 
-        root_path = '/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/badcase/%s/%d(%d)'
+        root_path = '/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/badcase/'
 
         for cluster_id in range(n_clusters):
             # 该 聚类的 个数
             print(cluster_id, sum(class_arr == cluster_id))
 
-            img_dir = root_path % (label, cluster_id, sum(class_arr == cluster_id))
+            img_dir = root_path + '%s/%d(%d)' % (label, cluster_id, sum(class_arr == cluster_id))
             if not os.path.exists(img_dir):
                 os.makedirs(img_dir)
 
@@ -177,7 +191,7 @@ class DataUtil:
         # 增加网格
         plt.grid()
         # plt.show()
-        plt.savefig('/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/badcase/%s'%label,dpi=200)
+        plt.savefig(root_path + '%s' % label, dpi=200)
         # 清理内存
         fig.clf()
         fig.clear()
@@ -191,7 +205,7 @@ def batch_outlier_detection():
     :return: None
     """
     for char in DataUtil.Character_Name:
-        (train_X, train_y), (val_X, val_y), (test_X, test_y) = DataUtil.load_train_test_data(option='2-1',
+        (train_X, train_y), (val_X, val_y), (test_X, test_y) = DataUtil.load_train_test_data(option='3-1',
                                                                                              binary_classes=char)
 
         X = np.concatenate((train_X, val_X, test_X), axis=0)
