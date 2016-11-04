@@ -1,5 +1,5 @@
 image_data
-badcase
+badcase*
 output
 *.pickle
 *.h5
