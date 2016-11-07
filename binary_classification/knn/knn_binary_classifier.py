@@ -66,11 +66,17 @@ class KnnBinaryClassifier(object):
         print(model.score(train_X, train_y))
         print(model.score(val_X, val_y))
         print(model.score(test_X, test_y))
-        test_pred = model.predict(test_X)
 
-        print(test_pred)
-        print(test_y)
-        print(sum(test_pred != test_y))
+        test_pred = model.predict(test_X)
+        val_pred = model.predict(val_X)
+
+        # print(test_pred)
+        # print(test_y)
+        print('test：%d'%sum(test_pred != test_y))
+        print('val:%d'%sum(val_pred != val_y))
+        print('test+val:%d'%((sum(test_pred != test_y))+sum(val_pred != val_y)))
+
+        print('test错误的index')
         print(np.arange(len(test_pred))[test_pred != test_y])
         print('真实值')
         print(test_y[test_pred != test_y])
@@ -78,7 +84,7 @@ class KnnBinaryClassifier(object):
         print(test_pred[test_pred != test_y])
 
 
-def binary_classifier_0D(dataset='2-1'):
+def binary_classifier_0D(dataset='3-1'):
     """预测二分类 0-D 的分类情况
         取局部特征预测 —— 取图片左半边，右半边基本一样
     :return: None
@@ -92,12 +98,14 @@ def binary_classifier_0D(dataset='2-1'):
     val_X = val_X[:, :, :, :8]
     test_X = test_X[:, :, :, :8]
 
+    print(len(train_X),len(val_X),len(test_X))
+
     model = KnnBinaryClassifier()
     model.fit(
         (train_X, train_y),
         (val_X, val_y),
         (test_X, test_y),
-        preprocessing_option=1,
+        preprocessing_option=0,
     )
 
 
@@ -160,17 +168,48 @@ def binary_classifier_4A(dataset='2-1'):
         preprocessing_option=1,
     )
 
+def binary_classifier_8B(dataset='3-1'):
+    """预测二分类 8-B 的分类情况
+        取局部特征预测 —— 取图片左半边，右半边基本一样
+    :return: None
+    """
+    (train_X, train_y), (val_X, val_y), (test_X, test_y) = DataUtil.load_train_test_data(option=dataset,
+                                                                                         binary_classes='8B')
+    # DataUtil.show_image(test_X[-1,0])
+    # DataUtil.show_image(test_X[0,0])
+    # DataUtil.show_image(test_X[3113,0])
+    # print(test_X[-1,0])
 
-def binary_classifer(dataset='2-1', option='0D'):
+    # 取图片上半边，下半边基本一样
+    train_X = train_X[:, :, :, :]
+    val_X = val_X[:, :, :, :]
+    test_X = test_X[:, :, :, :]
+
+    # DataUtil.show_image(test_X[-1,0])
+    DataUtil.show_image(test_X[3113,0])
+    # print(test_X[-1,0])
+
+    model = KnnBinaryClassifier()
+    model.fit(
+        (train_X, train_y),
+        (val_X, val_y),
+        (test_X, test_y),
+        preprocessing_option=1,
+    )
+
+
+def binary_classifer(dataset='3-1', option='0D'):
     if option == '0D':
         binary_classifier_0D(dataset=dataset)
     elif option == '1I':
         binary_classifier_1I(dataset=dataset)
     elif option == '4A':
         binary_classifier_4A(dataset=dataset)
+    elif option == '8B':
+        binary_classifier_8B(dataset=dataset)
     else:
         raise NotImplementedError
 
 
 if __name__ == '__main__':
-    binary_classifer(dataset='2-1', option='4A')
+    binary_classifer(dataset='3-3', option='0D')

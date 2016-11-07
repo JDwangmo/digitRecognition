@@ -156,18 +156,19 @@ class DataUtil:
 
         # endregion
 
-        root_path = '/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/badcase/'
+        root_path = '/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/badcase20161104'
 
         for cluster_id in range(n_clusters):
             # 该 聚类的 个数
             print(cluster_id, sum(class_arr == cluster_id))
 
-            img_dir = root_path + '%s/%d(%d)' % (label, cluster_id, sum(class_arr == cluster_id))
+            img_dir = root_path + '/%s/%d(%d)' % (label, cluster_id, sum(class_arr == cluster_id))
             if not os.path.exists(img_dir):
                 os.makedirs(img_dir)
 
-            for index, img in enumerate(X[class_arr == cluster_id]):
-                DataUtil.save_image(img[0], os.path.join(img_dir, str(index)))
+            for index, img in enumerate(X):
+                if class_arr[index] == cluster_id:
+                    DataUtil.save_image(img[0], os.path.join(img_dir, str(index)))
 
         # region PCA 可视化
         from sklearn.decomposition import PCA
@@ -183,18 +184,28 @@ class DataUtil:
         ax1.scatter(cluster_centers_2dim[:, 0], cluster_centers_2dim[:, 1], cluster_centers_2dim[:, 2])  # scatter绘制散点
         for txt in range(len(cluster_centers_2dim)):
             ax1.text(cluster_centers_2dim[txt, 0], cluster_centers_2dim[txt, 1], cluster_centers_2dim[txt, 2], txt)
+
         # 每个样例
         ax2 = fig.add_subplot(122, projection='3d')
         ax2.scatter(X_vector_2dim[:, 0], X_vector_2dim[:, 1], X_vector_2dim[:, 2])  # scatter绘制散点
+        np.random.seed(10)
+
         for txt in range(len(X_vector_2dim)):
-            ax2.text(X_vector_2dim[txt, 0], X_vector_2dim[txt, 1], X_vector_2dim[txt, 2], txt)
-        # 增加网格
-        plt.grid()
+            r = int(((txt * np.random.randint(0, 10) * 0.2) / float(len(X_vector_2dim) * 2)) * 100) / 100.0
+            g = int(((txt * np.random.randint(0, 10) * 0.2) / float(len(X_vector_2dim) * 2)) * 100) / 100.0
+            b = int(((txt * np.random.randint(0, 10) * 0.2) / float(len(X_vector_2dim) * 2)) * 100) / 100.0
+
+            size = np.random.randint(3, 5)
+            # print(r, g, b)
+
+            ax2.text(X_vector_2dim[txt, 0]+np.random.randint(40,90), X_vector_2dim[txt, 1]+np.random.randint(0,40), X_vector_2dim[txt, 2], txt,
+                     size=size, color=(r, g, b))
         # plt.show()
-        plt.savefig(root_path + '%s' % label, dpi=200)
+        plt.savefig(root_path + '/%s' % label, dpi=200)
         # 清理内存
         fig.clf()
         fig.clear()
+        plt.close()
         # endregion
 
 
@@ -205,6 +216,7 @@ def batch_outlier_detection():
     :return: None
     """
     for char in DataUtil.Character_Name:
+        char = '0D'
         (train_X, train_y), (val_X, val_y), (test_X, test_y) = DataUtil.load_train_test_data(option='3-1',
                                                                                              binary_classes=char)
 
@@ -213,7 +225,9 @@ def batch_outlier_detection():
 
         print(y, len(X))
 
+        quit()
         DataUtil.outlier_detection(X, char)
+
 
 
 if __name__ == '__main__':
