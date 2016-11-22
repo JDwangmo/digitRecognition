@@ -3,3 +3,5 @@ badcase*
 output
 *.pickle
 *.h5
+*.rar
+*.pkl
