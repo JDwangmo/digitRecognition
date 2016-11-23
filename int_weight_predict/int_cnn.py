@@ -23,21 +23,47 @@ image_higth, image_width = 15, 15
 layer1 = 10
 hidden1 = 40
 region = 3
-# 数据集根目录
-data_root_path = '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData/Data/'
+
 # 模型权重根目录
-model_root_path = '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData/model'
+model_root_path = '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1122/'
+model_file_list_path = os.listdir(os.path.join(model_root_path, 'model'))
 
 
-def load_valdata(dir_path):
+def load_valdata(version='1122'):
+    """读取不同版本的测试集
+    1120 - 对应 /home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1120/Data/
+    1122 - 对应 /home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1122/Data/
+
+    :param dir_path: str
+    :param version: str
+    :return:
+    """
+
+    # 数据集根目录
+    data_root_path = '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/'
+
     # 读取验证数据、测试数据
-    with open(os.path.join(dir_path, 'valSet&TestSet.pickle'), 'rb') as train_file:
-        val_X = pickle.load(train_file)
-        val_y = pickle.load(train_file)
-        test_X = pickle.load(train_file)
-        test_y = pickle.load(train_file)
+    if version == '1122':
+        val_file_path = os.path.join(data_root_path, 'modelAndData1122/Data/', 'TrainSet_trainAndVal_testSet.pickle')
+        other_file_path = os.path.join(data_root_path, 'modelAndData1122/Data/', 'Olddata_TestSet.pickle')
+        with open(val_file_path, 'rb') as train_file:
+            train_X = pickle.load(train_file)
+            train_y = pickle.load(train_file)
+            val_X, val_y = None, None
+            test_X = pickle.load(train_file)
+            test_y = pickle.load(train_file)
+    elif version == '1120':
+        val_file_path = os.path.join(data_root_path, 'modelAndData1120/Data/', 'valSet&TestSet.pickle')
+        other_file_path = os.path.join(data_root_path, 'modelAndData1120/Data/', 'Olddata_TestSet.pickle')
+        with open(val_file_path, 'rb') as train_file:
+            val_X = pickle.load(train_file)
+            val_y = pickle.load(train_file)
+            test_X = pickle.load(train_file)
+            test_y = pickle.load(train_file)
+    else:
+        raise NotImplementedError
 
-    with open(os.path.join(dir_path, 'Olddata_TestSet.pickle'), 'rb') as otherFile:
+    with open(other_file_path, 'rb') as otherFile:
         other_X = pickle.load(otherFile)
         other_y = pickle.load(otherFile)
 
@@ -90,9 +116,23 @@ def Net_model(layer1, hidden1, region, rows, cols, nb_classes, lr=0.01, decay=1e
     return model, mid_output
 
 
-def test_model(model, X_test, Y_test):
+def test_model(model_file, X_test, Y_test):
+    # 加载模型架构
+    # 这里的 lr 设置什么不影响
+    model, mid_output = Net_model(layer1, hidden1, region, image_higth, image_width, nb_classes=34, lr=0)
+    model.load_weights(model_file)
+
     # 预测
     predicted = model.predict_classes(X_test, verbose=0)
+
+    return count_result(predicted, Y_test)
+
+
+def count_result(predicted, Y_test):
+    '''统计预测情况，包括混淆集个数等
+
+    :return:
+    '''
     # 统计混淆集
     badcase = {}
     for i in range(0, len(Y_test)):
@@ -102,7 +142,7 @@ def test_model(model, X_test, Y_test):
         if predicted[i] != Y_test[i]:
             ch1 = tramsform(Y_test[i])
             ch2 = tramsform(predicted[i])
-            string = ','.join([ch1, ch2])
+            string = ','.join(sorted([ch1, ch2]))
 
             if badcase.has_key(string):
                 badcase[string] += 1
@@ -327,20 +367,17 @@ def save_model_file_to_pickle():
     将模型权重读取出来，并保存
     :return:
     '''
-    model_file_list_path = os.listdir(model_root_path)
-    with open('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData/model_weight.pkl',
-              'w') as fout:
+    with open(os.path.join(model_root_path, 'model_weight.pkl'), 'w') as fout:
         for index in range(1, len(model_file_list_path) + 1):
             # 从 模型1 开始，依次往后
             # 找到对应模型文件
-
             for item in model_file_list_path:
                 if item.__contains__('iteration%d_model_weights_10-40_region3_' % index):
                     model_file = item
                     break
 
             if (index + 1) % 10 == 0:
-                print(index)
+                print(index + 1)
 
             # 加载模型架构
             # 这里的 lr 设置什么不影响
@@ -348,14 +385,17 @@ def save_model_file_to_pickle():
             # model.summary()
 
             # quit()
-            model.load_weights(os.path.join(model_root_path, model_file))
+            model.load_weights(os.path.join(model_root_path, 'model', model_file))
             pickle.dump(model.get_weights(), fout)
 
             # print(model_file)
 
 
 # region 读取数据集：验证数据(64369个)、测试数据(64381个)、其他应用数据集(243391个)
-(X_val, y_val), (X_test, y_test), (X_other, y_other) = load_valdata(data_root_path)
+(X_val, y_val), (X_test, y_test), (X_other, y_other) = load_valdata(version='1122')
+
+print(X_test.shape)
+print(X_other.shape)
 
 # save_img_to_bininary_file(X_val,y_val,name='val')
 # save_img_to_bininary_file(X_test, y_test,name='test')
@@ -364,34 +404,46 @@ def save_model_file_to_pickle():
 # save_model_file_to_pickle()
 # quit()
 # endregion
+# 测试模型
+# print(test_model(os.path.join(model_root_path,'model', 'iteration1_model_weights_10-40_region3_lr0.05_firstCNN_final.h5'),
+#            X_test,
+#            y_test))
+# quit()
+# Welcome to Linux Mint 17.3 Rosa (GNU/Linux 3.19.0-32-generic x86_64)
+#
+# Welcome to Linux Mint
+#  * Documentation:  http://www.linuxmint.com
+#
+#
+# WARNING: Security updates for your current Hardware Enablement Stack
+# ended on 2016-08-04:
+#  * http://wiki.ubuntu.com/1404_HWE_EOL
+#
+# To upgrade to a supported (or longer-supported) configuration:
+#
+# * Upgrade from Ubuntu 14.04 LTS to Ubuntu 16.04 LTS by running:
+# sudo do-release-upgrade
+#
+# OR
+#
+# * Switch to the current security-supported stack by running:
+# sudo apt-get install libgl1-mesa-glx-lts-xenial:i386 xserver-xorg-lts-xenial libgl1-mesa-glx-lts-xenial libwayland-egl1-mesa-lts-xenial
+#
+# and reboot your system.
+# Last login: Tue Nov 22 20:47:41 2016 from localhost
 
-model_file_list_path = os.listdir(model_root_path)
 
-with open('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData/model_weight.pkl', 'r') as fin:
+with open(os.path.join(model_root_path, 'model_weight.pkl'), 'r') as fin:
     for index in range(1, len(model_file_list_path) + 1):
         # 从 模型1 开始，依次往后
         # 找到对应模型文件
-
-        weights = pickle.loads(fin)
-
-        # 加载模型架构
-        # 这里的 lr 设置什么不影响
-        # model, mid_output = Net_model(layer1, hidden1, region, image_higth, image_width, nb_classes=34, lr=0)
-        # model.summary()
-
-        # quit()
-        # model.load_weights(os.path.join(model_root_path, model_file))
-        # mid_result = mid_output([X_val[:1], 0])
-
-        # save_cnn_weight_to_bininary_file(model.get_weights())
-
-        # predicted = model.predict_classes(X_val, verbose=0)
+        weights = pickle.load(fin)
         # print(np.mean(predicted == y_val))
         #
         # print('OK')
         start = time.time()
-        int_predict = cnn_batch_predict(X_val, weights)
-        print(np.mean(int_predict == y_val))
+        int_predict = cnn_batch_predict(X_test, weights)
+        count_result(int_predict, y_test)
 
         end = time.time()
         print('time:%ds' % (end - start))
@@ -408,7 +460,7 @@ with open('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/mode
         #
         # (val_accuracy, val5, val10) = test_model(model, X_val, y_val)
         # print('验证集：%f,%d,%d' % (val_accuracy, val5, val10))
-        break
+        # break
         # (test_accuracy, test5, test10) = test_model(model, X_test, y_test)
         # print('测试集：%f,%d,%d' % (test_accuracy, test5, test10))
         # (other_accuracy, other5, other10) = test_model(model, X_other, y_other)
