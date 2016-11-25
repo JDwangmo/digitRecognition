@@ -92,7 +92,7 @@ class DataUtil(object):
         :type version: int
         :param charset: 字符集,比如输入'8B',则返回 8 和 B 的所有数据集
         :type charset: str
-        :return: (train_X,train_y),(test_X,test_y)
+        :return: (X_train,y_train),(test_X,test_y)
         '''
 
         root_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/dataset_20160801/'

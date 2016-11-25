@@ -222,7 +222,7 @@ class DataUtil(object):
                                       1,
                                       15,
                                       15)
-            # print(train_X.shape)
+            # print(X_train.shape)
             # quit()
 
             train_y = np.asarray(train_data[u'LABEL'].astype(dtype='str').map(character_to_index).as_matrix())

@@ -30,7 +30,7 @@ class DataUtil:
         :param binary_classes: int
             待分类字符的数据集
         :return:
-            (train_X, train_y), (val_X, val_y), (test_X, test_y)
+            (X_train, y_train), (val_X, val_y), (test_X, test_y)
         """
         if option == '1-1':
             root_path = '/home/jdwang/PycharmProjects/digitRecognition/binary_classification/dataset/dataset20161101'
@@ -100,7 +100,7 @@ class DataUtil:
         test_X = test_X[selected_samples]
         test_y = test_y[selected_samples]
 
-        # train_y = np_utils.to_categorical(train_y, nb_classes)
+        # y_train = np_utils.to_categorical(y_train, nb_classes)
         # val_y = np_utils.to_categorical(val_y, nb_classes)
         # test_y = np_utils.to_categorical(test_y, nb_classes)
 

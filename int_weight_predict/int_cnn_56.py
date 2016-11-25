@@ -3,7 +3,7 @@
     Author:  'jdwang'
     Date:    'create date: 2016-11-18'; 'last updated date: 2016-11-18'
     Email:   '383287471@qq.com'
-    Describe: 整形权重的预测
+    Describe: 整形权重的预测, 5-6 二分类器 ，包括 56二分类器的训练，测试，最后 用 56二分类器修正 34分类结果
 """
 from __future__ import print_function
 import numpy as np
@@ -14,7 +14,7 @@ import pickle
 import os
 
 np.random.seed(1337)  # for reproducibility
-nb_classes = 34
+nb_classes = 2
 nb_epoch = 30
 batch_size = 128
 
@@ -31,7 +31,6 @@ model_file_list_path = os.listdir(os.path.join(model_root_path, 'model'))
 
 def load_valdata(version='1122'):
     """读取不同版本的测试集
-    1120 - 对应 /home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1120/Data/
     1122 - 对应 /home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1122/Data/
 
     :param dir_path: str
@@ -50,16 +49,12 @@ def load_valdata(version='1122'):
             train_X = pickle.load(train_file)
             train_y = pickle.load(train_file)
             val_X, val_y = None, None
-            test_X = pickle.load(train_file)
-            test_y = pickle.load(train_file)
-    elif version == '1120':
-        val_file_path = os.path.join(data_root_path, 'modelAndData1120/Data/', 'valSet&TestSet.pickle')
-        other_file_path = os.path.join(data_root_path, 'modelAndData1120/Data/', 'Olddata_TestSet.pickle')
-        with open(val_file_path, 'rb') as train_file:
-            val_X = pickle.load(train_file)
-            val_y = pickle.load(train_file)
-            test_X = pickle.load(train_file)
-            test_y = pickle.load(train_file)
+            test_X = np.asarray(pickle.load(train_file))
+            test_y = np.asarray(pickle.load(train_file))
+
+
+
+
     else:
         raise NotImplementedError
 
@@ -67,7 +62,7 @@ def load_valdata(version='1122'):
         other_X = pickle.load(otherFile)
         other_y = pickle.load(otherFile)
 
-    return (val_X, val_y), (test_X, test_y), (other_X, other_y)
+    return (train_X, train_y), (val_X, val_y), (test_X, test_y), (other_X, other_y)
 
 
 def Net_model(layer1, hidden1, region, rows, cols, nb_classes, lr=0.01, decay=1e-6, momentum=0.9):
@@ -76,6 +71,7 @@ def Net_model(layer1, hidden1, region, rows, cols, nb_classes, lr=0.01, decay=1e
     from keras.layers.convolutional import Convolution2D, MaxPooling2D
     from keras.optimizers import SGD
     from keras import backend as K
+
     model = Sequential()
 
     model.add(Convolution2D(layer1, region, region,
@@ -119,7 +115,7 @@ def Net_model(layer1, hidden1, region, rows, cols, nb_classes, lr=0.01, decay=1e
 def test_model(model_file, X_test, Y_test):
     # 加载模型架构
     # 这里的 lr 设置什么不影响
-    model, mid_output = Net_model(layer1, hidden1, region, image_higth, image_width, nb_classes=34, lr=0)
+    model, mid_output = Net_model(layer1, hidden1, region, image_higth, image_width, nb_classes=2, lr=0.01)
     model.load_weights(model_file)
 
     # 预测
@@ -151,15 +147,18 @@ def count_result(predicted, Y_test):
 
     # 计算测试准确率
     test_accuracy = np.mean(np.equal(predicted, Y_test))
+    graterThan2 = 0
     graterThan5 = 0
     graterThan10 = 0
     for key, value in badcase.items():
+        if value >= 2:
+            graterThan2 += 1
         if value >= 5:
             graterThan5 += 1
         if value >= 10:
             graterThan10 += 1
 
-    return (test_accuracy, graterThan5, graterThan10)
+    return test_accuracy, graterThan2, graterThan5, graterThan10, badcase
 
 
 def tramsform(num):
@@ -194,15 +193,21 @@ def conv_pool_operation(img, conv_W, conv_b):
     # 3D
     conv_result = np.zeros((conv_W.shape[0], img_row - filter_row + 1, img_col - filter_col + 1))
     # quit()
+
     for filter_index in range(conv_W.shape[0]):
+        j_1 = conv_W[filter_index, 0].flatten()[-1::-1]
+        # j= conv_W[filter_index, 0].flatten()
         for x in range(0, img_row - filter_row + 1):
             for y in range(0, img_col - filter_col + 1):
-                i = img[0, x:x + filter_row, y:y + filter_col].flatten()
-                j = conv_W[filter_index, 0].flatten()[-1::-1]
                 conv_result[filter_index,
                             x,
-                            y] = tanh_approximate_function(np.dot(i, j) + conv_b[filter_index])
-                # print(np.dot(i, j) + conv_b[filter_index])
+                            y] = tanh_approximate_function(np.dot(img[0, x:x + filter_row, y:y + filter_col].flatten(),
+                                                                  j_1
+                                                                  # conv_W[filter_index, 0].flatten()[-1::-1]
+                                                                  )
+                                                           + conv_b[filter_index]
+                                                           )
+                # print(np.dot(img[0, x:x + filter_row, y:y + filter_col].flatten(),j_1)+ conv_b[filter_index])
 
     # conv_result = tanh_approximate_function(conv_result)
     pool_row, pool_col = 2, 2
@@ -236,14 +241,26 @@ def hidden_operation(feature_vector, W, b, activion='tanh'):
         权重
     :param b: array-1D
         偏差
+        0.001417s
+        0.000125s
     :return:
     """
+    # start = time.time()
 
-    temp = np.dot(feature_vector, W) + b
+    # temp =np.dot(feature_vector, W) + b
+    # temp =map(lambda x:np.dot(feature_vector, x[0])+x[1],zip(W.transpose(),b))
+    # temp =map(lambda x:np.dot(feature_vector, x[0])+x[1], zip(W.transpose(),b))
+    #
+    # print(feature_vector.shape,W.shape)
+    # end = time.time()
+    # print('hidden_operation time:%fs' % (end - start))
+    # quit()
     if activion == 'tanh':
-        return np.asarray([tanh_approximate_function(item) for item in temp])
+        # return np.asarray([tanh_approximate_function(item) for item in temp])
+        return map(lambda x: tanh_approximate_function(np.dot(feature_vector, x[0]) + x[1]), zip(W.transpose(), b))
     elif activion == 'none':
-        return temp
+        # return temp
+        return map(lambda x: np.dot(feature_vector, x[0]) + x[1], zip(W.transpose(), b))
     else:
         raise NotImplementedError
 
@@ -271,7 +288,7 @@ def cnn_batch_predict(X_val, weights):
     :param weights:
     :return:
     '''
-    weights = [(item * 1e6).astype(dtype=int) for item in weights]
+    weights = [(item * 1e5).astype(dtype=int) for item in weights]
     # result = cnn_predict(X_val[0],weights)
     result = []
     for index, img in enumerate(X_val):
@@ -289,18 +306,38 @@ def cnn_predict(img, weights):
     :return:
     '''
     # 3D
+    start = time.time()
+
     imgs_conv_result = conv_pool_operation(img, weights[0], weights[1])
+    end = time.time()
+    # print('conv time:%fs' % (end - start))
+
+    start = time.time()
+
     # print('conv over..')
     flatten_result = imgs_conv_result.flatten()
+
+    end = time.time()
+    # print('flatten time:%fs' % (end - start))
+
+    start = time.time()
     # print('flatten over..')
     # print(flatten_result.shape)
     hidden1_output = hidden_operation(flatten_result, weights[2], weights[3], activion='tanh')
+    end = time.time()
+    # print('hidden1 time:%fs' % (end - start))
 
+    start = time.time()
     # print('hidden1 over..')
     hidden2_output = hidden_operation(hidden1_output, weights[4], weights[5], activion='none')
+    end = time.time()
+    # print('hidden2 time:%fs' % (end - start))
     # print('hidden2 over..')
     # print(hidden2_output.shape)
+    start = time.time()
     result = np.argmax(hidden2_output)
+    end = time.time()
+    # print('max time:%fs' % (end - start))
     return result
 
 
@@ -312,9 +349,7 @@ def save_cnn_weight_to_bininary_file(model_weights):
     for weight in model_weights:
         print(weight.shape)
         # print(weight[0][0])
-        fout = open(
-            '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData/int_weights/int_weight%d.txt' % count,
-            'w')
+        fout = open(os.path.join(model_root_path, 'int_weights/int_weight%d.txt' % count), 'w')
         fout.write('%s\n' % str(weight.shape))
         weight1 = weight.reshape(weight.shape[0], -1)
         # print(weight1[0])
@@ -326,7 +361,7 @@ def save_cnn_weight_to_bininary_file(model_weights):
             weight1 = np.transpose(weight1)
             # print(weight1[0])
         np.savetxt(fout,
-                   weight1 * 1e6,
+                   weight1 * 1e5,
                    fmt='%i',
                    delimiter=',')
         count += 1
@@ -340,9 +375,7 @@ def save_cnn_weight_to_bininary_file(model_weights):
 
 def save_img_to_bininary_file(test_X, test_y, name='val'):
     # 将图片保存成 二进制 形式
-    with open(
-                    '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData/Data/images_%sdata.mat' % name,
-            'wb') as fout:
+    with open(os.path.join(model_root_path, 'Data/images_%sdata.mat' % name), 'wb') as fout:
         print(test_X.shape)
         fout.write(struct.pack('i', len(test_X)))
 
@@ -354,9 +387,8 @@ def save_img_to_bininary_file(test_X, test_y, name='val'):
                 fout.write(struct.pack('c', chr(item)))
                 # quit()
 
-    with open(
-                    '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData/Data/labels_%sdata.mat' % name,
-            'wb') as fout:
+    with open(os.path.join(model_root_path, 'Data/labels_%sdata.mat' % name),
+              'wb') as fout:
         fout.write(struct.pack('i', len(test_y)))
         for item in test_y:
             fout.write(struct.pack('c', chr(item)))
@@ -391,11 +423,129 @@ def save_model_file_to_pickle():
             # print(model_file)
 
 
-# region 读取数据集：验证数据(64369个)、测试数据(64381个)、其他应用数据集(243391个)
-(X_val, y_val), (X_test, y_test), (X_other, y_other) = load_valdata(version='1122')
+def train_CNN_model(train_X, train_y, X_test, y_test, other_X, other_y):
+    '''
+    训练56二分类器
+    :param train_X:
+    :param train_y:
+    :param X_test:
+    :param y_test:
+    :param other_X:
+    :param other_y:
+    :return:
+    '''
+    from keras.utils import np_utils
+    model, mid_output = Net_model(layer1, hidden1, region, image_higth, image_width, nb_classes=nb_classes, lr=0.01)
 
+    train_X = train_X[(train_y == 5) + (train_y == 6)]
+    train_y = train_y[(train_y == 5) + (train_y == 6)]
+    # 将5改为0
+    # 将6改为1
+    # 以便于CNN做2分类
+    train_y[train_y == 5] = 0
+    train_y[train_y == 6] = 1
+
+    X_test = X_test[(y_test == 5) + (y_test == 6)]
+    y_test = X_test[(y_test == 5) + (y_test == 6)]
+
+    other_X = other_X[(other_y == 5) + (other_y == 6)]
+    other_y = other_y[(other_y == 5) + (other_y == 6)]
+
+    train_y = np_utils.to_categorical(train_y, 2)
+
+    model.fit(
+        train_X,
+        train_y,
+        nb_epoch=10,
+        shuffle=True,
+        batch_size=32,
+        verbose=1,
+    )
+
+    fout = open(os.path.join(model_root_path, '56binary_model_weight.pkl'), 'w')
+    pickle.dump(model.get_weights(), fout)
+
+    # model.save_weights(os.path.join(model_root_path,'56binary_model_weight.pkl'))
+
+    predicted = model.predict_classes(X_test, verbose=0)
+    # 恢复标签
+    predicted[predicted == 0] = 5
+    predicted[predicted == 1] = 6
+
+    print(np.mean(predicted == y_test))
+
+    predicted = model.predict_classes(other_X, verbose=0)
+    # 恢复标签
+    predicted[predicted == 0] = 5
+    predicted[predicted == 1] = 6
+
+    print(np.mean(predicted == other_y))
+
+
+def binary_class_test():
+    '''
+    二进制分类的测试
+    :return:
+    '''
+    # 开始位置
+    start = 0
+    with open(os.path.join(model_root_path, '56binary_model_weight.pkl'), 'r') as fin:
+        for index in range(1, len(model_file_list_path) + 1):
+            # 从 模型1 开始，依次往后
+            # 找到对应模型文件
+
+            if index < start:
+                weights = pickle.load(fin)
+                continue
+
+            weights = pickle.load(fin)
+
+            # save_cnn_weight_to_bininary_file(weights)
+            # quit()
+            # print(np.mean(predicted == y_val))
+            #
+            # print('OK')
+            start = time.time()
+            int_predict = cnn_batch_predict(X_test, weights)
+            int_predict[int_predict == 0] = 5
+            int_predict[int_predict == 1] = 6
+            print(int_predict)
+            print(index, count_result(int_predict, y_test))
+            # 将结果保存
+            # pickle.dump(int_predict,predict_result_34class_file)
+            end = time.time()
+            print('time:%ds' % (end - start))
+
+            # if (np.mean(int_predict == predicted)) != 1.0:
+            #     print(index, model_file)
+            #     print(predicted)
+            #     print(int_predict)
+            #     print(np.mean(int_predict == predicted))
+            #
+            # # if (index + 1) % 10 == 0:
+            # #     print(index)
+            # # assert (np.mean(int_predict == predicted)) == 1.0
+            #
+            # (val_accuracy, val5, val10) = test_model(model, X_val, y_val)
+            # print('验证集：%f,%d,%d' % (val_accuracy, val5, val10))
+            break
+            # (test_accuracy, test5, test10) = test_model(model, X_test, y_test)
+            # print('测试集：%f,%d,%d' % (test_accuracy, test5, test10))
+            # (other_accuracy, other5, other10) = test_model(model, X_other, y_other)
+            # print('other集：%f,%d,%d' % (other_accuracy, other5, other10))
+
+
+# region 读取数据集：验证数据(64369个)、测试数据(64381个)、其他应用数据集(243391个)
+(X_train, y_train), (X_val, y_val), (X_test, y_test), (X_other, y_other) = load_valdata(version='1122')
+
+print(X_train.shape)
 print(X_test.shape)
 print(X_other.shape)
+
+# region CNN 模型的训练
+# train_CNN_model(X_train, y_train, X_test, y_test, X_other, y_other))
+# quit()
+# endregion
 
 # save_img_to_bininary_file(X_val,y_val,name='val')
 # save_img_to_bininary_file(X_test, y_test,name='test')
@@ -409,59 +559,44 @@ print(X_other.shape)
 #            X_test,
 #            y_test))
 # quit()
-# Welcome to Linux Mint 17.3 Rosa (GNU/Linux 3.19.0-32-generic x86_64)
-#
-# Welcome to Linux Mint
-#  * Documentation:  http://www.linuxmint.com
-#
-#
-# WARNING: Security updates for your current Hardware Enablement Stack
-# ended on 2016-08-04:
-#  * http://wiki.ubuntu.com/1404_HWE_EOL
-#
-# To upgrade to a supported (or longer-supported) configuration:
-#
-# * Upgrade from Ubuntu 14.04 LTS to Ubuntu 16.04 LTS by running:
-# sudo do-release-upgrade
-#
-# OR
-#
-# * Switch to the current security-supported stack by running:
-# sudo apt-get install libgl1-mesa-glx-lts-xenial:i386 xserver-xorg-lts-xenial libgl1-mesa-glx-lts-xenial libwayland-egl1-mesa-lts-xenial
-#
-# and reboot your system.
-# Last login: Tue Nov 22 20:47:41 2016 from localhost
 
+option = 'test'
+# option = 'other'
 
-with open(os.path.join(model_root_path, 'model_weight.pkl'), 'r') as fin:
-    for index in range(1, len(model_file_list_path) + 1):
-        # 从 模型1 开始，依次往后
-        # 找到对应模型文件
-        weights = pickle.load(fin)
-        # print(np.mean(predicted == y_val))
-        #
-        # print('OK')
+if option == 'test':
+    predict_result_34class_file = open(os.path.join(model_root_path, '34class_test_predict_result_e5.pkl'), 'r')
+elif option == 'other':
+    predict_result_34class_file = open(os.path.join(model_root_path, '34class_o_predict_result_e5.pkl'), 'r')
+    X_test = X_other
+    y_test = y_other
+
+# 用二分类器修正34分类结果
+# 34分类前21个模型的预测结果
+# run_id = [99, 129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 758, 864, 875, 890, 905, 975, 1014]
+run_id = [129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 758, 864, 875, 890, 905, 975, 1014]
+for index in run_id:
+
+    try:
+        int_predict_34class = np.asarray(pickle.load(predict_result_34class_file))
+
+        # 读取二分类器的权重
+        weights = pickle.load(open(os.path.join(model_root_path, '56binary_model_weight.pkl'), 'r'))
+        # 被预测成56的数据
+        idx_predicted_56 = (int_predict_34class == 5) + (int_predict_34class == 6)
+        print('预测成5-6的个数:%d' % sum(idx_predicted_56))
+
         start = time.time()
-        int_predict = cnn_batch_predict(X_test, weights)
-        count_result(int_predict, y_test)
+        binary_result = cnn_batch_predict(X_test[idx_predicted_56], weights)
+
+        binary_result[binary_result == 0] = 5
+        binary_result[binary_result == 1] = 6
+        # 修正结果
+        int_predict_34class[idx_predicted_56] = binary_result
+        print(index, count_result(int_predict_34class, y_test))
 
         end = time.time()
         print('time:%ds' % (end - start))
 
-        # if (np.mean(int_predict == predicted)) != 1.0:
-        #     print(index, model_file)
-        #     print(predicted)
-        #     print(int_predict)
-        #     print(np.mean(int_predict == predicted))
-        #
-        # # if (index + 1) % 10 == 0:
-        # #     print(index)
-        # # assert (np.mean(int_predict == predicted)) == 1.0
-        #
-        # (val_accuracy, val5, val10) = test_model(model, X_val, y_val)
-        # print('验证集：%f,%d,%d' % (val_accuracy, val5, val10))
         # break
-        # (test_accuracy, test5, test10) = test_model(model, X_test, y_test)
-        # print('测试集：%f,%d,%d' % (test_accuracy, test5, test10))
-        # (other_accuracy, other5, other10) = test_model(model, X_other, y_other)
-        # print('other集：%f,%d,%d' % (other_accuracy, other5, other10))
+    except:
+        print('end!')

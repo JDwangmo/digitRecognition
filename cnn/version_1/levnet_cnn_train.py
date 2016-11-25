@@ -23,11 +23,11 @@ test_file_path = '/home/jdwang/PycharmProjects/digitRecognition/train_test_data/
                  'test_%dcharset_%d.csv' % (char_set, num_test)
 
 image_shape = (15,15)
-# train_pix,train_y,train_label,train_im_name = load_pix(train_file_path,
+# train_pix,y_train,train_label,train_im_name = load_pix(train_file_path,
 #                                            shape=image_shape,
 #                                            char_set = char_set
 #                                            )
-# # print train_y
+# # print y_train
 # # quit()
 # test_pix,test_y,test_label,test_im_name = load_pix(test_file_path,
 #                                                    shape=image_shape,
@@ -46,7 +46,7 @@ image_shape = (15,15)
 # character_name = sorted(list(set('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')))
 # print character_name
 # 将y转换成one-hot编码
-# train_y = [character_name.index(item) for item in train_y]
+# y_train = [character_name.index(item) for item in y_train]
 
 from train_test_data.dataset_20160801.data_util import DataUtil
 
@@ -63,7 +63,7 @@ charset='8B'
 train_y = np_utils.to_categorical(train_y,num_class)
 # test_y = [character_name.index(item) for item in test_y]
 test_y = np_utils.to_categorical(test_y,num_class)
-# print train_y.shape
+# print y_train.shape
 # print test_y.shape
 # quit()
 

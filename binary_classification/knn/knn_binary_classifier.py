@@ -48,8 +48,8 @@ class KnnBinaryClassifier(object):
 
         if preprocessing is not None:
             train_X = preprocessing_tool.fit_transform(train_X)
-        # print(train_X[0])
-        # print(train_X[1])
+        # print(X_train[0])
+        # print(X_train[1])
         # quit()
         val_X, val_y = val_data
         val_X = val_X.reshape(len(val_X), -1)

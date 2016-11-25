@@ -42,7 +42,7 @@ character_name = sorted(list(set('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')))
 # 将y转换成one-hot编码
 test_y = [character_name.index(item) for item in test_y]
 test_y = np_utils.to_categorical(test_y,34)
-# print train_y.shape
+# print y_train.shape
 # print test_y.shape
 
 logging.debug( 'the shape of test sample:%d,%d,%d,%d'%(test_pix.shape))
