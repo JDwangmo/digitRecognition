@@ -26,8 +26,7 @@ region = 3
 
 # 模型权重根目录
 model_root_path = '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1122/'
-model_file_list_path = os.listdir(os.path.join(model_root_path, 'model'))
-
+model_file_list_path = os.listdir(os.path.join(model_root_path, 'model_top10_0DQ'))
 
 def load_valdata(version='1122'):
     """读取不同版本的测试集
@@ -160,6 +159,12 @@ def count_result(predicted, Y_test):
 
     return test_accuracy, graterThan2, graterThan5, graterThan10, badcase
 
+def char_to_index(char):
+    character_name = list('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')
+    if character_name.__contains__(char):
+        return character_name.index(char)
+    else:
+        raise NotImplementedError
 
 def tramsform(num):
     """ 数字 转换成 字符
@@ -289,7 +294,7 @@ def cnn_batch_predict(X_val, weights):
     :return:
     '''
     weights = [(item * 1e5).astype(dtype=int) for item in weights]
-    # result = cnn_predict(X_val[0],weights)
+    # result = cnn_predict(X_val[0],weights_56)
     result = []
     for index, img in enumerate(X_val):
         if (index + 1) % 1000 == 0:
@@ -399,10 +404,12 @@ def save_model_file_to_pickle():
     将模型权重读取出来，并保存
     :return:
     '''
-    with open(os.path.join(model_root_path, 'model_weight.pkl'), 'w') as fout:
-        for index in range(1, len(model_file_list_path) + 1):
+    with open(os.path.join(model_root_path, '0DQclass_model_weight.pkl'), 'w') as fout:
+        # for index in range(1, len(model_file_list_path) + 1):
+        for index in [216,224,263,270,275,291,313,340,676]:
             # 从 模型1 开始，依次往后
             # 找到对应模型文件
+            # model_file_list_path = os.listdir('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/model_top10_0DQ')
             for item in model_file_list_path:
                 if item.__contains__('iteration%d_model_weights_10-40_region3_' % index):
                     model_file = item
@@ -413,11 +420,11 @@ def save_model_file_to_pickle():
 
             # 加载模型架构
             # 这里的 lr 设置什么不影响
-            model, mid_output = Net_model(layer1, hidden1, region, image_higth, image_width, nb_classes=34, lr=0)
+            model, mid_output = Net_model(layer1, hidden1, region, image_higth, image_width, nb_classes=3, lr=0)
             # model.summary()
 
             # quit()
-            model.load_weights(os.path.join(model_root_path, 'model', model_file))
+            model.load_weights(os.path.join(model_root_path, 'model_top10_0DQ', model_file))
             pickle.dump(model.get_weights(), fout)
 
             # print(model_file)
@@ -500,7 +507,7 @@ def binary_class_test():
 
             weights = pickle.load(fin)
 
-            # save_cnn_weight_to_bininary_file(weights)
+            # save_cnn_weight_to_bininary_file(weights_56)
             # quit()
             # print(np.mean(predicted == y_val))
             #
@@ -572,31 +579,45 @@ elif option == 'other':
 
 # 用二分类器修正34分类结果
 # 34分类前21个模型的预测结果
-# run_id = [99, 129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 758, 864, 875, 890, 905, 975, 1014]
-run_id = [129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 758, 864, 875, 890, 905, 975, 1014]
+run_id = [99, 129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 758, 864, 875, 890, 905, 975, 1014]
+# run_id = [129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 758, 864, 875, 890, 905, 975, 1014]
 for index in run_id:
 
-    try:
-        int_predict_34class = np.asarray(pickle.load(predict_result_34class_file))
+    int_predict_34class = np.asarray(pickle.load(predict_result_34class_file))
 
-        # 读取二分类器的权重
-        weights = pickle.load(open(os.path.join(model_root_path, '56binary_model_weight.pkl'), 'r'))
-        # 被预测成56的数据
-        idx_predicted_56 = (int_predict_34class == 5) + (int_predict_34class == 6)
-        print('预测成5-6的个数:%d' % sum(idx_predicted_56))
+    # 读取二分类器的权重 - 5-6
+    weights_56 = pickle.load(open(os.path.join(model_root_path, '56binary_model_weight.pkl'), 'r'))
 
-        start = time.time()
-        binary_result = cnn_batch_predict(X_test[idx_predicted_56], weights)
+    # 读取3分类器的权重 - 0-D-Q
+    weights_0DQ = pickle.load(open(os.path.join(model_root_path, '0DQclass_model_weight.pkl'), 'r'))
 
-        binary_result[binary_result == 0] = 5
-        binary_result[binary_result == 1] = 6
-        # 修正结果
-        int_predict_34class[idx_predicted_56] = binary_result
-        print(index, count_result(int_predict_34class, y_test))
+    # 被预测成56的数据
+    idx_predicted_56 = (int_predict_34class == 5) + (int_predict_34class == 6)
+    print('预测成5-6的个数:%d' % sum(idx_predicted_56))
 
-        end = time.time()
-        print('time:%ds' % (end - start))
+    # 被预测成0DQ的数据
+    idx_predicted_0DQ = (int_predict_34class == 0) + (int_predict_34class == char_to_index('D')) + (int_predict_34class == char_to_index('Q'))
+    print('预测成0-D-Q的个数:%d' % sum(idx_predicted_0DQ))
 
-        # break
-    except:
-        print('end!')
+    start = time.time()
+    binary_result_56 = cnn_batch_predict(X_test[idx_predicted_56], weights_56)
+
+    binary_result_0DQ = cnn_batch_predict(X_test[idx_predicted_0DQ], weights_0DQ)
+
+    binary_result_56[binary_result_56 == 0] = 5
+    binary_result_56[binary_result_56 == 1] = 6
+
+    binary_result_0DQ[binary_result_56 == 0] = 0
+    binary_result_0DQ[binary_result_56 == 1] = char_to_index('D')
+    binary_result_0DQ[binary_result_56 == 2] = char_to_index('Q')
+
+    # 修正结果
+    int_predict_34class[idx_predicted_56] = binary_result_56
+    int_predict_34class[idx_predicted_0DQ] = binary_result_0DQ
+
+    print(index, count_result(int_predict_34class, y_test))
+
+    end = time.time()
+    print('time:%ds' % (end - start))
+
+    break

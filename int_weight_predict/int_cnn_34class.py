@@ -296,7 +296,7 @@ def cnn_batch_predict(X_val, weights):
     :return:
     '''
     weights = [(item * 1e5).astype(dtype=int) for item in weights]
-    # result = cnn_predict(X_val[0],weights)
+    # result = cnn_predict(X_val[0],weights_56)
     result = []
     for index, img in enumerate(X_val):
         if (index + 1) % 1000 == 0:
@@ -463,7 +463,7 @@ with open(os.path.join(model_root_path, 'model_weight.pkl'), 'r') as fin:
 
         weights = pickle.load(fin)
 
-        # save_cnn_weight_to_bininary_file(weights)
+        # save_cnn_weight_to_bininary_file(weights_56)
         # quit()
         # print(np.mean(predicted == y_val))
         #
