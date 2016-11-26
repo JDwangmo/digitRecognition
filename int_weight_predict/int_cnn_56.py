@@ -15,7 +15,7 @@ import os
 
 np.random.seed(1337)  # for reproducibility
 nb_classes = 2
-nb_epoch = 30
+nb_epoch = 10
 batch_size = 128
 
 image_higth, image_width = 15, 15
@@ -27,6 +27,7 @@ region = 3
 # 模型权重根目录
 model_root_path = '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1122/'
 model_file_list_path = os.listdir(os.path.join(model_root_path, 'model_top10_0DQ'))
+
 
 def load_valdata(version='1122'):
     """读取不同版本的测试集
@@ -51,9 +52,6 @@ def load_valdata(version='1122'):
             test_X = np.asarray(pickle.load(train_file))
             test_y = np.asarray(pickle.load(train_file))
 
-
-
-
     else:
         raise NotImplementedError
 
@@ -61,7 +59,7 @@ def load_valdata(version='1122'):
         other_X = pickle.load(otherFile)
         other_y = pickle.load(otherFile)
 
-    return (train_X, train_y), (val_X, val_y), (test_X, test_y), (other_X, other_y)
+    return (train_X, np.asarray(train_y)), (val_X, np.asarray(val_y)), (test_X, np.asarray(test_y)), (other_X, np.asarray(other_y))
 
 
 def Net_model(layer1, hidden1, region, rows, cols, nb_classes, lr=0.01, decay=1e-6, momentum=0.9):
@@ -159,12 +157,14 @@ def count_result(predicted, Y_test):
 
     return test_accuracy, graterThan2, graterThan5, graterThan10, badcase
 
+
 def char_to_index(char):
     character_name = list('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')
     if character_name.__contains__(char):
         return character_name.index(char)
     else:
         raise NotImplementedError
+
 
 def tramsform(num):
     """ 数字 转换成 字符
@@ -406,7 +406,7 @@ def save_model_file_to_pickle():
     '''
     with open(os.path.join(model_root_path, '0DQclass_model_weight.pkl'), 'w') as fout:
         # for index in range(1, len(model_file_list_path) + 1):
-        for index in [216,224,263,270,275,291,313,340,676]:
+        for index in [216, 224, 263, 270, 275, 291, 313, 340, 676]:
             # 从 模型1 开始，依次往后
             # 找到对应模型文件
             # model_file_list_path = os.listdir('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/model_top10_0DQ')
@@ -453,7 +453,7 @@ def train_CNN_model(train_X, train_y, X_test, y_test, other_X, other_y):
     train_y[train_y == 6] = 1
 
     X_test = X_test[(y_test == 5) + (y_test == 6)]
-    y_test = X_test[(y_test == 5) + (y_test == 6)]
+    y_test = y_test[(y_test == 5) + (y_test == 6)]
 
     other_X = other_X[(other_y == 5) + (other_y == 6)]
     other_y = other_y[(other_y == 5) + (other_y == 6)]
@@ -463,7 +463,7 @@ def train_CNN_model(train_X, train_y, X_test, y_test, other_X, other_y):
     model.fit(
         train_X,
         train_y,
-        nb_epoch=10,
+        nb_epoch=nb_epoch,
         shuffle=True,
         batch_size=32,
         verbose=1,
@@ -550,8 +550,8 @@ print(X_test.shape)
 print(X_other.shape)
 
 # region CNN 模型的训练
-# train_CNN_model(X_train, y_train, X_test, y_test, X_other, y_other))
-# quit()
+train_CNN_model(X_train, y_train, X_test, y_test, X_other, y_other)
+quit()
 # endregion
 
 # save_img_to_bininary_file(X_val,y_val,name='val')
@@ -573,7 +573,7 @@ option = 'test'
 if option == 'test':
     predict_result_34class_file = open(os.path.join(model_root_path, '34class_test_predict_result_e5.pkl'), 'r')
 elif option == 'other':
-    predict_result_34class_file = open(os.path.join(model_root_path, '34class_o_predict_result_e5.pkl'), 'r')
+    predict_result_34class_file = open(os.path.join(model_root_path, '34class_other22_predict_result_e5.pkl'), 'r')
     X_test = X_other
     y_test = y_other
 
@@ -581,9 +581,12 @@ elif option == 'other':
 # 34分类前21个模型的预测结果
 run_id = [99, 129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 758, 864, 875, 890, 905, 975, 1014]
 # run_id = [129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 758, 864, 875, 890, 905, 975, 1014]
+start = 1014
 for index in run_id:
 
     int_predict_34class = np.asarray(pickle.load(predict_result_34class_file))
+    if index < start:
+        continue
 
     # 读取二分类器的权重 - 5-6
     weights_56 = pickle.load(open(os.path.join(model_root_path, '56binary_model_weight.pkl'), 'r'))
@@ -596,7 +599,8 @@ for index in run_id:
     print('预测成5-6的个数:%d' % sum(idx_predicted_56))
 
     # 被预测成0DQ的数据
-    idx_predicted_0DQ = (int_predict_34class == 0) + (int_predict_34class == char_to_index('D')) + (int_predict_34class == char_to_index('Q'))
+    idx_predicted_0DQ = (int_predict_34class == 0) + (int_predict_34class == char_to_index('D')) + (
+        int_predict_34class == char_to_index('Q'))
     print('预测成0-D-Q的个数:%d' % sum(idx_predicted_0DQ))
 
     start = time.time()
@@ -606,10 +610,11 @@ for index in run_id:
 
     binary_result_56[binary_result_56 == 0] = 5
     binary_result_56[binary_result_56 == 1] = 6
+    # print(binary_result_0DQ)
 
-    binary_result_0DQ[binary_result_56 == 0] = 0
-    binary_result_0DQ[binary_result_56 == 1] = char_to_index('D')
-    binary_result_0DQ[binary_result_56 == 2] = char_to_index('Q')
+    binary_result_0DQ[binary_result_0DQ == 0] = 0
+    binary_result_0DQ[binary_result_0DQ == 1] = char_to_index('D')
+    binary_result_0DQ[binary_result_0DQ == 2] = char_to_index('Q')
 
     # 修正结果
     int_predict_34class[idx_predicted_56] = binary_result_56
