@@ -18,7 +18,7 @@ nb_classes = 2
 nb_epoch = 10
 batch_size = 128
 
-image_higth, image_width = 15, 15
+image_higth, image_width = 15, 8
 # lr = [0.05, 0.01, 0.005]
 layer1 = 10
 hidden1 = 40
@@ -26,7 +26,7 @@ region = 3
 
 # 模型权重根目录
 model_root_path = '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1122/'
-model_file_list_path = os.listdir(os.path.join(model_root_path, 'model_top10_0DQ'))
+model_file_list_path = os.listdir(os.path.join(model_root_path, 'model_top10_8B'))
 
 
 def load_valdata(version='1122'):
@@ -59,7 +59,8 @@ def load_valdata(version='1122'):
         other_X = pickle.load(otherFile)
         other_y = pickle.load(otherFile)
 
-    return (train_X, np.asarray(train_y)), (val_X, np.asarray(val_y)), (test_X, np.asarray(test_y)), (other_X, np.asarray(other_y))
+    return (train_X, np.asarray(train_y)), (val_X, np.asarray(val_y)), (test_X, np.asarray(test_y)), (
+        other_X, np.asarray(other_y))
 
 
 def Net_model(layer1, hidden1, region, rows, cols, nb_classes, lr=0.01, decay=1e-6, momentum=0.9):
@@ -109,16 +110,32 @@ def Net_model(layer1, hidden1, region, rows, cols, nb_classes, lr=0.01, decay=1e
     return model, mid_output
 
 
-def test_model(model_file, X_test, Y_test):
+def test_model(model_file, X_test, y_test, other_X, other_y, type='8B'):
+    if type == '8B':
+        X_test = X_test[(y_test == 8) + (y_test == char_to_index('B'))][:, :, :, :8]
+        y_test = y_test[(y_test == 8) + (y_test == char_to_index('B'))]
+
+        other_X = other_X[(other_y == 8) + (other_y == char_to_index('B'))][:, :, :, :8]
+        other_y = other_y[(other_y == 8) + (other_y == char_to_index('B'))]
+        # 左半边
+        image_width = 8
+
     # 加载模型架构
     # 这里的 lr 设置什么不影响
     model, mid_output = Net_model(layer1, hidden1, region, image_higth, image_width, nb_classes=2, lr=0.01)
     model.load_weights(model_file)
+    # model.summary()
+    # quit()
+
 
     # 预测
     predicted = model.predict_classes(X_test, verbose=0)
 
-    return count_result(predicted, Y_test)
+    if type == '8B':
+        predicted[predicted == 0] = 8
+        predicted[predicted == 1] = char_to_index('B')
+
+    return count_result(predicted, y_test)
 
 
 def count_result(predicted, Y_test):
@@ -136,7 +153,8 @@ def count_result(predicted, Y_test):
             ch1 = tramsform(Y_test[i])
             ch2 = tramsform(predicted[i])
             string = ','.join(sorted([ch1, ch2]))
-
+            if string == '2,B':
+                pass
             if badcase.has_key(string):
                 badcase[string] += 1
             else:
@@ -311,6 +329,8 @@ def cnn_predict(img, weights):
     :return:
     '''
     # 3D
+    # print(img)
+    # quit()
     start = time.time()
 
     imgs_conv_result = conv_pool_operation(img, weights[0], weights[1])
@@ -335,6 +355,7 @@ def cnn_predict(img, weights):
     start = time.time()
     # print('hidden1 over..')
     hidden2_output = hidden_operation(hidden1_output, weights[4], weights[5], activion='none')
+    print(hidden2_output)
     end = time.time()
     # print('hidden2 time:%fs' % (end - start))
     # print('hidden2 over..')
@@ -342,11 +363,14 @@ def cnn_predict(img, weights):
     start = time.time()
     result = np.argmax(hidden2_output)
     end = time.time()
+    print(result)
+    quit()
+
     # print('max time:%fs' % (end - start))
     return result
 
 
-def save_cnn_weight_to_bininary_file(model_weights):
+def save_cnn_weight_to_bininary_file(model_weights, type='8B'):
     # print(model_weights)
     # print(len(model_weights))
 
@@ -354,17 +378,17 @@ def save_cnn_weight_to_bininary_file(model_weights):
     for weight in model_weights:
         print(weight.shape)
         # print(weight[0][0])
-        fout = open(os.path.join(model_root_path, 'int_weights/int_weight%d.txt' % count), 'w')
+        fout = open(os.path.join(model_root_path, 'int_weights/binary%s_int_weight%d.txt' % (type, count)), 'w')
         fout.write('%s\n' % str(weight.shape))
         weight1 = weight.reshape(weight.shape[0], -1)
         # print(weight1[0])
         if len(weight.shape) == 4:
-            # conv weight,reverse
+        # conv weight,reverse
             weight1 = np.asarray([item[-1::-1] for item in weight1])
         if len(weight.shape) == 2:
-            # fc1 weight,reverse
+        # fc1 weight,reverse
             weight1 = np.transpose(weight1)
-            # print(weight1[0])
+        # print(weight1[0])
         np.savetxt(fout,
                    weight1 * 1e5,
                    fmt='%i',
@@ -399,14 +423,22 @@ def save_img_to_bininary_file(test_X, test_y, name='val'):
             fout.write(struct.pack('c', chr(item)))
 
 
-def save_model_file_to_pickle():
+def save_model_file_to_pickle(type='8B'):
     '''
     将模型权重读取出来，并保存
     :return:
     '''
-    with open(os.path.join(model_root_path, '0DQclass_model_weight.pkl'), 'w') as fout:
+
+    if type == '8B':
+        iter_index = [1, 2, 6, 7, 12, 14, 15, 34, 35, 47]
+        filename = '8Bbinary_model_weight.pkl'
+    elif type == '0DQ':
+        iter_index = [216, 224, 263, 270, 275, 291, 313, 340, 676, 735]
+        filename = '0DQclass_model_weight.pkl'
+
+    with open(os.path.join(model_root_path, filename), 'w') as fout:
         # for index in range(1, len(model_file_list_path) + 1):
-        for index in [216, 224, 263, 270, 275, 291, 313, 340, 676]:
+        for index in iter_index:
             # 从 模型1 开始，依次往后
             # 找到对应模型文件
             # model_file_list_path = os.listdir('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/model_top10_0DQ')
@@ -424,7 +456,7 @@ def save_model_file_to_pickle():
             # model.summary()
 
             # quit()
-            model.load_weights(os.path.join(model_root_path, 'model_top10_0DQ', model_file))
+            model.load_weights(os.path.join(model_root_path, 'model_top10_8B', model_file))
             pickle.dump(model.get_weights(), fout)
 
             # print(model_file)
@@ -542,6 +574,67 @@ def binary_class_test():
             # print('other集：%f,%d,%d' % (other_accuracy, other5, other10))
 
 
+def generation_badcese(s):
+    """将混淆集的结果生成矩阵形式，便于复制到excel
+
+    :param s: str
+    :return:
+
+    Example
+    ---
+    >>> s='''{'3,8': 2, 'X,Y': 1, '3,S': 2, '4,A': 1, '0,D': 1, '0,C': 1, '5,L': 2, '2,Z': 2, 'G,Q': 1, 'H,K': 1}
+    >>>     {'A,N': 1, '6,K': 1, '0,Q': 2, 'F,P': 1, 'C,G': 1, 'E,F': 2, '6,8': 2, '0,D': 2, '2,Z': 2}
+    >>>     {'0,C': 1, '8,Y': 1, 'F,P': 2, '5,B': 1, '5,S': 1, '1,T': 2, '3,B': 2}'''
+    >>> generation_badcese(s)
+    """
+    # 收集 混淆集 集合
+    key_set = []
+    for item in s.split('\n'):
+        a = eval(item)
+        key_set += a.keys()
+
+    key_set = sorted(set(key_set))
+    print(key_set)
+
+    result = []
+    for item in s.split('\n'):
+        a = eval(item)
+        for i in key_set:
+            if i not in a.keys():
+                a[i] = 0
+                #     print(a)
+
+        print([item[1] for item in sorted(a.items(), key=lambda x: x[0])])
+
+        result.append(sorted(a.items(), key=lambda x: x[0]))
+        #     break
+
+        # print(result)
+
+
+s = '''{'0,6': 4, '6,B': 1, '1,9': 1, '1,4': 1, '6,8': 9, 'H,K': 2, '3,8': 4, '5,6': 2, 'G,Q': 4, '8,L': 1, '9,S': 4, '7,P': 1, '7,T': 1, '8,B': 6, '4,A': 2, '9,H': 5, '0,Q': 15, '1,T': 14, 'C,G': 4, '6,E': 6, '0,G': 1, 'D,Q': 2, '0,D': 8, '0,C': 5, '2,Z': 20, 'B,G': 2, '1,B': 2}
+{'D,Q': 2, '4,Q': 1, '6,E': 1, '0,Q': 15, '1,7': 9, '1,T': 1, '6,B': 2, '5,6': 2, '8,B': 8, '6,G': 4, '6,8': 2, '4,A': 2, '0,D': 8, '9,B': 2, '8,Z': 2, '2,Z': 1}
+{'7,Z': 2, 'J,T': 2, '4,Q': 1, 'E,F': 1, '3,8': 4, '9,S': 2, '0,Q': 15, '1,Y': 2, '1,7': 1, '1,T': 2, '5,6': 2, '8,B': 8, '6,8': 1, 'D,Q': 2, '0,D': 8, '0,C': 5, 'F,P': 1, '5,S': 3, '3,B': 2}
+{'1,7': 9, '6,8': 5, '3,8': 7, '4,6': 4, 'F,P': 3, '5,6': 2, '3,B': 3, 'G,Q': 1, '9,S': 2, '7,T': 2, '8,B': 10, '4,A': 3, '5,B': 1, '4,M': 1, '0,Q': 15, '1,Y': 3, '1,W': 2, '1,T': 2, 'C,G': 1, 'D,Q': 2, '0,D': 8, '0,C': 2}
+{'D,Q': 2, '7,T': 2, '9,P': 2, '0,Q': 15, '6,E': 2, '1,T': 11, '5,6': 2, '8,B': 8, '6,G': 2, 'C,Q': 3, '0,G': 2, 'F,P': 1, '4,A': 5, '0,D': 8, '0,C': 2, 'G,Q': 1, '2,Z': 9, '5,B': 2, '3,8': 3, '1,4': 1}
+{'J,T': 6, '0,3': 2, '1,7': 25, '6,8': 2, '2,9': 1, '3,8': 5, '5,6': 2, 'K,Y': 1, '9,S': 5, '7,T': 2, '8,B': 8, '9,B': 2, '9,J': 2, '0,Q': 15, 'C,D': 5, '1,T': 20, 'C,G': 1, '6,E': 3, '6,F': 2, '0,G': 2, '0,D': 6, '0,C': 16, 'E,S': 3}
+{'1,7': 3, '6,8': 3, '5,9': 3, 'F,P': 1, '5,6': 2, 'G,Q': 1, 'K,X': 1, '4,Q': 2, '9,S': 2, '7,T': 13, '8,B': 6, '9,E': 8, '5,F': 5, '3,B': 2, '6,E': 3, '0,Q': 15, '1,T': 6, 'E,F': 1, 'B,P': 2, '6,G': 2, 'B,R': 2, '0,G': 4, 'D,Q': 2, '0,D': 8, '0,C': 19, '0,L': 3}
+{'6,B': 1, '1,7': 3, '6,8': 1, '5,9': 4, 'F,P': 4, '5,6': 2, 'F,J': 2, '4,M': 1, '8,9': 2, 'N,X': 3, 'M,Y': 7, 'G,U': 2, '7,Z': 1, '9,S': 5, '8,B': 8, '4,A': 1, 'R,Z': 2, '5,B': 1, '5,F': 2, '3,B': 2, '0,Q': 15, '1,T': 3, 'C,G': 1, 'D,Q': 2, '0,D': 8, '0,C': 10, '2,Z': 1, '1,G': 2, '6,S': 2}
+{'J,T': 9, 'A,K': 7, '1,7': 6, '6,8': 11, '5,8': 1, '5,9': 4, '3,8': 3, '3,5': 1, '5,6': 2, 'X,Y': 5, 'G,Q': 1, '7,Z': 1, '8,B': 6, '4,A': 7, '9,B': 4, '0,Q': 15, 'C,G': 1, 'B,Q': 1, '0,G': 2, 'D,Q': 2, '0,D': 8, '0,C': 10}
+{'1,7': 1, '1,3': 1, '6,8': 11, 'P,R': 2, '5,6': 2, 'G,Q': 4, 'K,Y': 1, '9,S': 7, '7,T': 2, '8,B': 8, '5,K': 7, '4,A': 3, '5,F': 2, '3,B': 2, '0,Q': 15, '1,Y': 11, '1,T': 20, '6,B': 6, '6,G': 2, 'D,Q': 2, '0,D': 8, '0,C': 3, '2,Z': 7}
+{'D,Q': 2, 'C,G': 4, '7,T': 5, '0,Q': 15, '0,1': 2, 'J,T': 2, '5,S': 4, '1,T': 3, '9,S': 6, '5,6': 2, '1,3': 2, '8,B': 10, '9,D': 1, '0,D': 6, '0,C': 1, '4,G': 1, '6,S': 2, '1,C': 1, '4,L': 1}
+{'D,Q': 2, '0,U': 5, '3,8': 9, '9,S': 2, '0,Q': 15, 'J,T': 2, '7,T': 1, '1,T': 14, '5,6': 2, '8,B': 8, '6,8': 8, '4,A': 4, '0,D': 8, '9,B': 2, '2,Z': 3, '6,S': 2}
+{'F,Y': 1, 'D,Q': 2, '6,K': 1, '3,8': 6, '1,7': 1, '0,Q': 15, '5,S': 3, '1,T': 3, '6,E': 3, '8,B': 8, '4,A': 1, '0,D': 8, '0,C': 25, '2,Z': 22, '5,B': 5, 'G,Q': 1, '9,S': 6, '7,T': 1, '1,4': 2, '5,6': 2}
+{'4,7': 1, '9,S': 1, '0,Q': 15, '7,T': 15, '1,T': 7, 'C,G': 2, '5,6': 2, '8,B': 8, '6,8': 2, 'D,Q': 2, '0,D': 8, '0,C': 6, '4,Z': 2, 'G,Q': 3, 'C,Q': 2, '3,B': 2}
+{'J,T': 2, '1,7': 6, '6,8': 7, '2,3': 1, '3,8': 7, '5,6': 2, '4,W': 1, '8,B': 8, '3,S': 5, '4,A': 15, '9,B': 2, '8,S': 29, '3,B': 5, '0,Q': 15, '1,T': 3, '6,E': 12, 'D,Q': 2, '0,D': 8, '0,C': 10, '2,Z': 2, '1,G': 4, '6,S': 2, 'C,Q': 1}
+{'D,Q': 2, '0,3': 2, 'X,Y': 1, '0,Q': 15, '1,7': 7, '1,T': 16, '5,6': 2, '8,B': 8, 'F,P': 1, '6,8': 2, '4,A': 1, '0,D': 6, '0,C': 2, 'B,H': 2, 'G,Q': 1, '2,Z': 3, '5,B': 1, 'A,W': 2, '5,S': 6, '1,4': 1}
+{'J,T': 4, '1,7': 2, '6,8': 10, '3,8': 4, '3,9': 1, 'F,P': 5, 'M,N': 5, '8,9': 1, 'M,X': 2, 'K,X': 3, '4,Q': 1, '9,S': 8, '7,T': 2, '8,B': 8, '3,B': 2, '5,6': 2, '0,Q': 15, 'C,D': 3, '1,T': 2, '0,G': 1, 'D,Q': 2, '0,D': 8, '1,J': 3}
+{'J,T': 2, '1,7': 4, '3,8': 1, '3,9': 1, '5,6': 2, 'D,P': 7, '9,S': 4, '8,B': 8, '5,T': 4, '4,A': 14, '9,B': 2, '4,F': 1, 'C,L': 3, '0,Q': 15, '1,Y': 1, 'C,D': 3, '1,T': 23, '6,E': 6, '0,G': 2, 'D,Q': 2, '0,D': 8, '0,C': 6, '2,Z': 2, '1,F': 2, '1,D': 2, '1,C': 2}
+{'7,T': 3, '0,2': 2, '0,Q': 15, '6,E': 1, '1,T': 21, 'C,G': 2, '5,6': 2, '8,B': 8, 'L,U': 3, '0,G': 1, 'D,Q': 2, '0,D': 6, '0,C': 23, 'X,Y': 1, '2,Z': 19, 'G,Q': 3, '9,S': 4, '3,B': 2, '4,6': 1}
+{'J,T': 5, '6,8': 9, '9,S': 12, '5,9': 2, '3,8': 2, 'F,P': 2, '5,6': 2, 'G,Q': 1, '4,Q': 1, '3,Y': 1, '9,Q': 2, '8,E': 3, '7,T': 28, '8,B': 8, '4,A': 7, '3,E': 1, '0,Q': 15, '1,T': 20, 'C,G': 1, '6,E': 1, 'D,Q': 2, '0,D': 8, '0,C': 8, '2,Z': 12, 'B,E': 2}
+{'D,Q': 2, '7,T': 5, '3,9': 3, '0,Q': 15, '5,S': 4, '1,T': 3, '6,B': 2, '5,6': 2, '8,B': 8, '6,8': 1, '4,A': 3, '0,D': 8, '4,G': 1, '2,Z': 19, '5,B': 3, 'G,Q': 1, 'K,X': 2, 'K,Y': 1}'''
+# generation_badcese(s)
+# quit()
 # region 读取数据集：验证数据(64369个)、测试数据(64381个)、其他应用数据集(243391个)
 (X_train, y_train), (X_val, y_val), (X_test, y_test), (X_other, y_other) = load_valdata(version='1122')
 
@@ -550,22 +643,25 @@ print(X_test.shape)
 print(X_other.shape)
 
 # region CNN 模型的训练
-train_CNN_model(X_train, y_train, X_test, y_test, X_other, y_other)
-quit()
+# train_CNN_model(X_train, y_train, X_test, y_test, X_other, y_other)
+# quit()
 # endregion
-
+# region 保存图片到二进制文件
 # save_img_to_bininary_file(X_val,y_val,name='val')
 # save_img_to_bininary_file(X_test, y_test,name='test')
 # save_img_to_bininary_file(X_other, y_other,name='other')
-# 将模型权重保存
-# save_model_file_to_pickle()
+# endregion
+# region 将模型权重保存
+# save_model_file_to_pickle(type='8B)
 # quit()
 # endregion
-# 测试模型
-# print(test_model(os.path.join(model_root_path,'model', 'iteration1_model_weights_10-40_region3_lr0.05_firstCNN_final.h5'),
-#            X_test,
-#            y_test))
+# region 测试模型
+# print(test_model(os.path.join(model_root_path,'model_top10_8B', 'iteration1_model_weights_10-40_region3_lr0.01_0DQCNN.h5'),
+#                  X_test, y_test, X_other, y_other,
+#                 type='8B',
+#                  ))
 # quit()
+# endregion
 
 option = 'test'
 # option = 'other'
@@ -573,7 +669,7 @@ option = 'test'
 if option == 'test':
     predict_result_34class_file = open(os.path.join(model_root_path, '34class_test_predict_result_e5.pkl'), 'r')
 elif option == 'other':
-    predict_result_34class_file = open(os.path.join(model_root_path, '34class_other22_predict_result_e5.pkl'), 'r')
+    predict_result_34class_file = open(os.path.join(model_root_path, '34class_other_predict_result_e5.pkl'), 'r')
     X_test = X_other
     y_test = y_other
 
@@ -581,22 +677,32 @@ elif option == 'other':
 # 34分类前21个模型的预测结果
 run_id = [99, 129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 758, 864, 875, 890, 905, 975, 1014]
 # run_id = [129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 758, 864, 875, 890, 905, 975, 1014]
-start = 1014
+start = 141
 for index in run_id:
-
     int_predict_34class = np.asarray(pickle.load(predict_result_34class_file))
     if index < start:
         continue
 
     # 读取二分类器的权重 - 5-6
     weights_56 = pickle.load(open(os.path.join(model_root_path, '56binary_model_weight.pkl'), 'r'))
+    # save_cnn_weight_to_bininary_file(weights_56)
+
+    # 读取二分类器的权重 - 8-B
+    weights_8B = pickle.load(open(os.path.join(model_root_path, '8Bbinary_model_weight.pkl'), 'r'))
+    # save_cnn_weight_to_bininary_file(weights_8B, type='8B')
+    # quit()
 
     # 读取3分类器的权重 - 0-D-Q
     weights_0DQ = pickle.load(open(os.path.join(model_root_path, '0DQclass_model_weight.pkl'), 'r'))
+    # save_cnn_weight_to_bininary_file(weights_0DQ)
 
     # 被预测成56的数据
     idx_predicted_56 = (int_predict_34class == 5) + (int_predict_34class == 6)
     print('预测成5-6的个数:%d' % sum(idx_predicted_56))
+
+    # 被预测成8B的数据
+    idx_predicted_8B = (int_predict_34class == 8) + (int_predict_34class == char_to_index('B'))
+    print('预测成8-B的个数:%d' % sum(idx_predicted_8B))
 
     # 被预测成0DQ的数据
     idx_predicted_0DQ = (int_predict_34class == 0) + (int_predict_34class == char_to_index('D')) + (
@@ -604,25 +710,37 @@ for index in run_id:
     print('预测成0-D-Q的个数:%d' % sum(idx_predicted_0DQ))
 
     start = time.time()
-    binary_result_56 = cnn_batch_predict(X_test[idx_predicted_56], weights_56)
+    # binary_result_56 = cnn_batch_predict(X_test[idx_predicted_56], weights_56)
 
-    binary_result_0DQ = cnn_batch_predict(X_test[idx_predicted_0DQ], weights_0DQ)
+    # binary_result_0DQ = cnn_batch_predict(X_test[idx_predicted_0DQ], weights_0DQ)
+    # 取局部特征，左半边 15*8
+    # print(int_predict_34class[37053])
+    # binary_result_8B = cnn_batch_predict(X_test[idx_predicted_8B][:, :, :, :], weights_8B)
+    binary_result_8B = cnn_batch_predict(X_test[37053:37054][:, :, :, :8], weights_8B)
+    quit()
 
-    binary_result_56[binary_result_56 == 0] = 5
-    binary_result_56[binary_result_56 == 1] = 6
+    # binary_result_56[binary_result_56 == 0] = 5
+    # binary_result_56[binary_result_56 == 1] = 6
     # print(binary_result_0DQ)
+    # print(binary_result_8B)
 
-    binary_result_0DQ[binary_result_0DQ == 0] = 0
-    binary_result_0DQ[binary_result_0DQ == 1] = char_to_index('D')
-    binary_result_0DQ[binary_result_0DQ == 2] = char_to_index('Q')
+    binary_result_8B[binary_result_8B == 0] = 8
+    binary_result_8B[binary_result_8B == 1] = char_to_index('B')
+
+    # print(binary_result_8B)
+    # binary_result_0DQ[binary_result_0DQ == 0] = 0
+    # binary_result_0DQ[binary_result_0DQ == 1] = char_to_index('D')
+    # binary_result_0DQ[binary_result_0DQ == 2] = char_to_index('Q')
 
     # 修正结果
-    int_predict_34class[idx_predicted_56] = binary_result_56
-    int_predict_34class[idx_predicted_0DQ] = binary_result_0DQ
+    # int_predict_34class[idx_predicted_56] = binary_result_56
+    int_predict_34class[idx_predicted_8B] = binary_result_8B
+    # int_predict_34class[idx_predicted_0DQ] = binary_result_0DQ
 
-    print(index, count_result(int_predict_34class, y_test))
+    # print(index, count_result(int_predict_34class, y_test))
+    print(list(binary_result_8B))
 
     end = time.time()
     print('time:%ds' % (end - start))
 
-    break
+    # break

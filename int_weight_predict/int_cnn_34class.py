@@ -450,21 +450,20 @@ print(X_other.shape)
 # quit()
 
 # 开始位置
-start = 890
+start = 141
 
-with open(os.path.join(model_root_path, 'model_weight.pkl'), 'r') as fin:
+with open(os.path.join(model_root_path, '34class_model_weight.pkl'), 'r') as fin:
     for index in range(1, len(model_file_list_path) + 1):
         # 从 模型1 开始，依次往后
         # 找到对应模型文件
-
-        if index < start:
-            weights = pickle.load(fin)
-            continue
-
         weights = pickle.load(fin)
 
-        # save_cnn_weight_to_bininary_file(weights_56)
-        # quit()
+        if index != start:
+            continue
+
+
+        save_cnn_weight_to_bininary_file(weights)
+        quit()
         # print(np.mean(predicted == y_val))
         #
         # print('OK')
