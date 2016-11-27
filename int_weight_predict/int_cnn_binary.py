@@ -355,7 +355,6 @@ def cnn_predict(img, weights):
     start = time.time()
     # print('hidden1 over..')
     hidden2_output = hidden_operation(hidden1_output, weights[4], weights[5], activion='none')
-    print(hidden2_output)
     end = time.time()
     # print('hidden2 time:%fs' % (end - start))
     # print('hidden2 over..')
@@ -363,8 +362,6 @@ def cnn_predict(img, weights):
     start = time.time()
     result = np.argmax(hidden2_output)
     end = time.time()
-    print(result)
-    quit()
 
     # print('max time:%fs' % (end - start))
     return result
@@ -710,17 +707,15 @@ for index in run_id:
     print('预测成0-D-Q的个数:%d' % sum(idx_predicted_0DQ))
 
     start = time.time()
-    # binary_result_56 = cnn_batch_predict(X_test[idx_predicted_56], weights_56)
+    binary_result_56 = cnn_batch_predict(X_test[idx_predicted_56], weights_56)
 
-    # binary_result_0DQ = cnn_batch_predict(X_test[idx_predicted_0DQ], weights_0DQ)
+    binary_result_0DQ = cnn_batch_predict(X_test[idx_predicted_0DQ], weights_0DQ)
     # 取局部特征，左半边 15*8
     # print(int_predict_34class[37053])
-    # binary_result_8B = cnn_batch_predict(X_test[idx_predicted_8B][:, :, :, :], weights_8B)
-    binary_result_8B = cnn_batch_predict(X_test[37053:37054][:, :, :, :8], weights_8B)
-    quit()
+    binary_result_8B = cnn_batch_predict(X_test[idx_predicted_8B][:, :, :, :], weights_8B)
 
-    # binary_result_56[binary_result_56 == 0] = 5
-    # binary_result_56[binary_result_56 == 1] = 6
+    binary_result_56[binary_result_56 == 0] = 5
+    binary_result_56[binary_result_56 == 1] = 6
     # print(binary_result_0DQ)
     # print(binary_result_8B)
 
@@ -728,17 +723,16 @@ for index in run_id:
     binary_result_8B[binary_result_8B == 1] = char_to_index('B')
 
     # print(binary_result_8B)
-    # binary_result_0DQ[binary_result_0DQ == 0] = 0
-    # binary_result_0DQ[binary_result_0DQ == 1] = char_to_index('D')
-    # binary_result_0DQ[binary_result_0DQ == 2] = char_to_index('Q')
+    binary_result_0DQ[binary_result_0DQ == 0] = 0
+    binary_result_0DQ[binary_result_0DQ == 1] = char_to_index('D')
+    binary_result_0DQ[binary_result_0DQ == 2] = char_to_index('Q')
 
     # 修正结果
-    # int_predict_34class[idx_predicted_56] = binary_result_56
+    int_predict_34class[idx_predicted_56] = binary_result_56
     int_predict_34class[idx_predicted_8B] = binary_result_8B
-    # int_predict_34class[idx_predicted_0DQ] = binary_result_0DQ
+    int_predict_34class[idx_predicted_0DQ] = binary_result_0DQ
 
-    # print(index, count_result(int_predict_34class, y_test))
-    print(list(binary_result_8B))
+    print(index, count_result(int_predict_34class, y_test))
 
     end = time.time()
     print('time:%ds' % (end - start))
