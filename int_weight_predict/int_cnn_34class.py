@@ -8,7 +8,7 @@
 from __future__ import print_function
 import numpy as np
 import struct
-
+from data_processing_util.data_util import DataUtil
 import time
 import pickle
 import os
@@ -23,11 +23,10 @@ image_higth, image_width = 15, 15
 layer1 = 10
 hidden1 = 40
 region = 3
-
+dutil = DataUtil()
 # 模型权重根目录
 model_root_path = '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1122/'
 model_file_list_path = os.listdir(os.path.join(model_root_path, 'model'))
-
 
 
 def load_valdata(version='1122'):
@@ -53,6 +52,11 @@ def load_valdata(version='1122'):
             val_X, val_y = None, None
             test_X = pickle.load(train_file)
             test_y = pickle.load(train_file)
+
+        with open(other_file_path, 'rb') as otherFile:
+            other_X = pickle.load(otherFile)
+            other_y = pickle.load(otherFile)
+
     elif version == '1120':
         val_file_path = os.path.join(data_root_path, 'modelAndData1120/Data/', 'valSet&TestSet.pickle')
         other_file_path = os.path.join(data_root_path, 'modelAndData1120/Data/', 'Olddata_TestSet.pickle')
@@ -61,12 +65,21 @@ def load_valdata(version='1122'):
             val_y = pickle.load(train_file)
             test_X = pickle.load(train_file)
             test_y = pickle.load(train_file)
+
+        with open(other_file_path, 'rb') as otherFile:
+            other_X = pickle.load(otherFile)
+            other_y = pickle.load(otherFile)
+
+    elif version == '1128':
+        val_file_path = os.path.join(data_root_path, '9905_1128/', 'TestSet.pickle')
+        with open(val_file_path, 'rb') as train_file:
+            val_X = None
+            val_y = None
+            test_X = pickle.load(train_file)
+            test_y = pickle.load(train_file)
+            other_X, other_y = None, None
     else:
         raise NotImplementedError
-
-    with open(other_file_path, 'rb') as otherFile:
-        other_X = pickle.load(otherFile)
-        other_y = pickle.load(otherFile)
 
     return (val_X, val_y), (test_X, test_y), (other_X, other_y)
 
@@ -163,7 +176,7 @@ def count_result(predicted, Y_test):
         if value >= 10:
             graterThan10 += 1
 
-    return test_accuracy, graterThan2, graterThan5, graterThan10,badcase
+    return test_accuracy, graterThan2, graterThan5, graterThan10, badcase
 
 
 def tramsform(num):
@@ -204,7 +217,6 @@ def conv_pool_operation(img, conv_W, conv_b):
         # j= conv_W[filter_index, 0].flatten()
         for x in range(0, img_row - filter_row + 1):
             for y in range(0, img_col - filter_col + 1):
-
                 conv_result[filter_index,
                             x,
                             y] = tanh_approximate_function(np.dot(img[0, x:x + filter_row, y:y + filter_col].flatten(),
@@ -214,7 +226,6 @@ def conv_pool_operation(img, conv_W, conv_b):
                                                            + conv_b[filter_index]
                                                            )
                 # print(np.dot(img[0, x:x + filter_row, y:y + filter_col].flatten(),j_1)+ conv_b[filter_index])
-
 
     # conv_result = tanh_approximate_function(conv_result)
     pool_row, pool_col = 2, 2
@@ -267,7 +278,7 @@ def hidden_operation(feature_vector, W, b, activion='tanh'):
         return map(lambda x: tanh_approximate_function(np.dot(feature_vector, x[0]) + x[1]), zip(W.transpose(), b))
     elif activion == 'none':
         # return temp
-        return map(lambda x:np.dot(feature_vector, x[0])+x[1], zip(W.transpose(),b))
+        return map(lambda x: np.dot(feature_vector, x[0]) + x[1], zip(W.transpose(), b))
     else:
         raise NotImplementedError
 
@@ -429,12 +440,48 @@ def save_model_file_to_pickle():
 
             # print(model_file)
 
+def predict(images):
+    """使用 141 模型预测
+
+    :param images:
+    :return:
+    """
+    start = 141
+    character_name = list('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')
+    with open(os.path.join(model_root_path, '34class_model_weight.pkl'), 'r') as fin:
+        for index in range(1, len(model_file_list_path) + 1):
+            # 从 模型1 开始，依次往后
+            # 找到对应模型文件
+            weights = pickle.load(fin)
+
+            if index != start:
+                continue
+
+            # save_cnn_weight_to_bininary_file(weights)
+            # quit()
+            # print(np.mean(predicted == y_val))
+            #
+            # print('OK')
+            start = time.time()
+            int_predict = cnn_batch_predict(images, weights)
+            print(int_predict, character_name[int_predict])
 
 # region 读取数据集：验证数据(64369个)、测试数据(64381个)、其他应用数据集(243391个)
-(X_val, y_val), (X_test, y_test), (X_other, y_other) = load_valdata(version='1122')
+(X_val, y_val), (X_test, y_test), (X_other, y_other) = load_valdata(version='1128')
 
 print(X_test.shape)
-print(X_other.shape)
+# print(X_other.shape)
+
+
+# region 预测一张图片
+# images = dutil.load_image_from_file('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/9905_1128/data/R/201611281104145610.bmp')
+# print(images)
+# images = images.reshape((1,1,15,15))
+# predict(images)
+# quit()
+# endregion
+
+
 
 # save_img_to_bininary_file(X_val,y_val,name='val')
 # save_img_to_bininary_file(X_test, y_test,name='test')
@@ -444,10 +491,11 @@ print(X_other.shape)
 # quit()
 # endregion
 # 测试模型
-# print(test_model(os.path.join(model_root_path,'model', 'iteration1_model_weights_10-40_region3_lr0.05_firstCNN_final.h5'),
+# print(test_model(os.path.join(model_root_path,'model', 'iteration141_model_weights_10-40_region3_lr0.005_firstCNN_final.h5'),
 #            X_test,
 #            y_test))
 # quit()
+
 
 # 开始位置
 start = 141
@@ -461,15 +509,14 @@ with open(os.path.join(model_root_path, '34class_model_weight.pkl'), 'r') as fin
         if index != start:
             continue
 
-
-        save_cnn_weight_to_bininary_file(weights)
-        quit()
+        # save_cnn_weight_to_bininary_file(weights)
+        # quit()
         # print(np.mean(predicted == y_val))
         #
         # print('OK')
         start = time.time()
         int_predict = cnn_batch_predict(X_test[:1], weights)
-        print(index,count_result(int_predict, y_test))
+        print(index, count_result(int_predict, y_test))
 
         end = time.time()
         print('time:%ds' % (end - start))
