@@ -17,6 +17,7 @@ np.random.seed(1337)  # for reproducibility
 nb_classes = 2
 nb_epoch = 10
 batch_size = 128
+character_name = list('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')
 
 image_higth, image_width = 15, 8
 # lr = [0.05, 0.01, 0.005]
@@ -639,6 +640,12 @@ print(X_train.shape)
 print(X_test.shape)
 print(X_other.shape)
 
+
+test_fin = open('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/Data1129/pm_TestSet.pickle')
+X_test = pickle.load(test_fin)
+y_test = pickle.load(test_fin)
+print([character_name[item] for item in y_test])
+
 # region CNN 模型的训练
 # train_CNN_model(X_train, y_train, X_test, y_test, X_other, y_other)
 # quit()
@@ -677,7 +684,8 @@ run_id = [99, 129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 7
 start = 141
 for index in run_id:
     int_predict_34class = np.asarray(pickle.load(predict_result_34class_file))
-    if index < start:
+    int_predict_34class = np.asarray([0,0,0,0,29,0,12,0,25,0,12,0,0,6,6,13,12])
+    if index != start:
         continue
 
     # 读取二分类器的权重 - 5-6
@@ -710,6 +718,7 @@ for index in run_id:
     binary_result_56 = cnn_batch_predict(X_test[idx_predicted_56], weights_56)
 
     binary_result_0DQ = cnn_batch_predict(X_test[idx_predicted_0DQ], weights_0DQ)
+
     # 取局部特征，左半边 15*8
     # print(int_predict_34class[37053])
     binary_result_8B = cnn_batch_predict(X_test[idx_predicted_8B][:, :, :, :], weights_8B)
@@ -733,6 +742,8 @@ for index in run_id:
     int_predict_34class[idx_predicted_0DQ] = binary_result_0DQ
 
     print(index, count_result(int_predict_34class, y_test))
+
+    print([character_name[item] for item in int_predict_34class])
 
     end = time.time()
     print('time:%ds' % (end - start))

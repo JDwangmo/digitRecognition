@@ -13,6 +13,8 @@ import time
 import pickle
 import os
 
+character_name = list('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')
+
 np.random.seed(1337)  # for reproducibility
 nb_classes = 34
 nb_epoch = 30
@@ -447,7 +449,6 @@ def predict(images):
     :return:
     """
     start = 141
-    character_name = list('0123456789ABCDEFGHIJKLMNPQRSTUWXYZ')
     with open(os.path.join(model_root_path, '34class_model_weight.pkl'), 'r') as fin:
         for index in range(1, len(model_file_list_path) + 1):
             # 从 模型1 开始，依次往后
@@ -464,20 +465,40 @@ def predict(images):
             # print('OK')
             start = time.time()
             int_predict = cnn_batch_predict(images, weights)
-            print(int_predict, character_name[int_predict])
+            # print(int_predict, character_name[int_predict])
+            return character_name[int_predict]
 
 # region 读取数据集：验证数据(64369个)、测试数据(64381个)、其他应用数据集(243391个)
 (X_val, y_val), (X_test, y_test), (X_other, y_other) = load_valdata(version='1128')
 
-print(X_test.shape)
+# 真实值              ['0', '0', '0', '0', '0', '0', '0', 'C']
+# 34分类              ['Q', 'D', '0', '0', '0', '0', 'Q', 'Q']
+# 加0-D-Q分类器        ['D', 'D', '0', 'D', '0', '0', 'Q', 'Q']
+
+# 真实值              ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '6', '6', 'G', 'G']
+# 34分类              ['0', '0', '0', '0', 'U', '0', 'C', '0', 'Q', '0', 'C', '0', '0', '6', '6', 'D', 'C']
+# 加分类器             ['Q', 'Q', '0', 'Q', 'U', '0', 'C', '0', '0', '0', 'C', 'D', '0', '5', '5', 'Q', 'C']
+
+# test_fin = open('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/Data1129/pm_TestSet.pickle')
+# X_test = pickle.load(test_fin)
+# y_test = pickle.load(test_fin)
+# images = dutil.load_image_from_file('/home/jdwang/Desktop/误识别 20161129Pm/0-4/201611291428255649.bmp')
+# X_test = images.reshape(1,1,15,15)
+# y_test = [0]
+# print([character_name[item] for item in y_test])
+# print(X_test.shape)
+# save_img_to_bininary_file(X_test,y_test,name='test1129pm01')
+# quit()
 # print(X_other.shape)
 
-
 # region 预测一张图片
-# images = dutil.load_image_from_file('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/9905_1128/data/R/201611281104145610.bmp')
-# print(images)
-# images = images.reshape((1,1,15,15))
-# predict(images)
+# image_root = '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/9905_1128/data/E'
+# for image_path in sorted(os.listdir(image_root)):
+#     images = dutil.load_image_from_file(os.path.join(image_root,image_path))
+#     # print(images)
+#     images = images.reshape((1,1,15,15))
+#     print(image_path,predict(images))
+#
 # quit()
 # endregion
 
@@ -515,7 +536,9 @@ with open(os.path.join(model_root_path, '34class_model_weight.pkl'), 'r') as fin
         #
         # print('OK')
         start = time.time()
-        int_predict = cnn_batch_predict(X_test[:1], weights)
+        int_predict = cnn_batch_predict(X_test, weights)
+        print(int_predict)
+        print([character_name[item] for item in int_predict])
         print(index, count_result(int_predict, y_test))
 
         end = time.time()
