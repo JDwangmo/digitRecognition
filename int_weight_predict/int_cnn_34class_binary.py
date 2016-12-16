@@ -41,6 +41,7 @@ def load_valdata(version='1122'):
 
     # 数据集根目录
     data_root_path = '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/'
+    other_X_new, other_y_new = None, None
 
     # 读取验证数据、测试数据
     if version == '1122':
@@ -52,16 +53,33 @@ def load_valdata(version='1122'):
             val_X, val_y = None, None
             test_X = np.asarray(pickle.load(train_file))
             test_y = np.asarray(pickle.load(train_file))
+            with open(other_file_path, 'rb') as otherFile:
+                other_X = pickle.load(otherFile)
+                other_y = pickle.load(otherFile)
+    elif version == '1214':
+        val_file_path = os.path.join(data_root_path, 'modelAndData1214/Data/', 'TrainSet_trainAndVal_testSet.pickle')
+        other_file_path = os.path.join(data_root_path, 'modelAndData1214/Data/', 'OldAndAlldata_TestSet.pickle')
+        new_other_file_path = os.path.join(data_root_path, 'modelAndData1214/Data/', '20161202am.pickle')
+        with open(val_file_path, 'rb') as train_file:
+            val_X = pickle.load(train_file)
+            val_y = pickle.load(train_file)
+            test_X = pickle.load(train_file)
+            test_y = pickle.load(train_file)
+        test_y = np.asarray(test_y)
+        with open(other_file_path, 'rb') as otherFile:
+            other_X = pickle.load(otherFile)
+            other_y = pickle.load(otherFile)
+        other_y = np.asarray(other_y)
+
+        with open(new_other_file_path, 'rb') as otherFile:
+            other_X_new = pickle.load(otherFile)
+            other_y_new = pickle.load(otherFile)
+        other_y_new = np.asarray(other_y_new)
 
     else:
         raise NotImplementedError
 
-    with open(other_file_path, 'rb') as otherFile:
-        other_X = pickle.load(otherFile)
-        other_y = pickle.load(otherFile)
-
-    return (train_X, np.asarray(train_y)), (val_X, np.asarray(val_y)), (test_X, np.asarray(test_y)), (
-        other_X, np.asarray(other_y))
+    return (val_X, val_y), (test_X, test_y), (other_X, other_y), (other_X_new, other_y_new)
 
 
 def Net_model(layer1, hidden1, region, rows, cols, nb_classes, lr=0.01, decay=1e-6, momentum=0.9):
@@ -634,17 +652,17 @@ s = '''{'0,6': 4, '6,B': 1, '1,9': 1, '1,4': 1, '6,8': 9, 'H,K': 2, '3,8': 4, '5
 # generation_badcese(s)
 # quit()
 # region 读取数据集：验证数据(64369个)、测试数据(64381个)、其他应用数据集(243391个)
-(X_train, y_train), (X_val, y_val), (X_test, y_test), (X_other, y_other) = load_valdata(version='1122')
+(X_val, y_val), (X_test, y_test), (X_other, y_other), (other_X_new, other_y_new) = load_valdata(version='1214')
 
-print(X_train.shape)
 print(X_test.shape)
 print(X_other.shape)
+print(other_X_new.shape)
 
 
-test_fin = open('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/Data1129/pm_TestSet.pickle')
-X_test = pickle.load(test_fin)
-y_test = pickle.load(test_fin)
-print([character_name[item] for item in y_test])
+# test_fin = open('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/Data1129/pm_TestSet.pickle')
+# X_test = pickle.load(test_fin)
+# y_test = pickle.load(test_fin)
+# print([character_name[item] for item in y_test])
 
 # region CNN 模型的训练
 # train_CNN_model(X_train, y_train, X_test, y_test, X_other, y_other)
@@ -667,8 +685,9 @@ print([character_name[item] for item in y_test])
 # quit()
 # endregion
 
-option = 'test'
+option = 'other_new'
 # option = 'other'
+# option = 'test'
 
 if option == 'test':
     predict_result_34class_file = open(os.path.join(model_root_path, '34class_test_predict_result_e5.pkl'), 'r')
@@ -677,6 +696,81 @@ elif option == 'other':
     X_test = X_other
     y_test = y_other
 
+elif option == 'other_new':
+    predict_result_34class_file = open('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1214/34class_other_new_result.csv', 'r')
+    X_test = other_X_new
+    y_test = other_y_new
+int_predict_34class = np.asarray(pickle.load(predict_result_34class_file))
+print(int_predict_34class)
+weights_56 = pickle.load(open(os.path.join(model_root_path, '56binary_model_weight.pkl'), 'r'))
+
+
+# 读取二分类器的权重 - 8-B
+weights_8B = pickle.load(open(os.path.join(model_root_path, '8Bbinary_model_weight.pkl'), 'r'))
+# save_cnn_weight_to_bininary_file(weights_8B, type='8B')
+# quit()
+
+# 读取3分类器的权重 - 0-D-Q
+weights_0DQ = pickle.load(open(os.path.join(model_root_path, '0DQclass_model_weight.pkl'), 'r'))
+# save_cnn_weight_to_bininary_file(weights_0DQ)
+
+# 被预测成56的数据
+idx_predicted_56 = (int_predict_34class == 5) + (int_predict_34class == 6)
+print('预测成5-6的个数:%d' % sum(idx_predicted_56))
+
+# 被预测成8B的数据
+idx_predicted_8B = (int_predict_34class == 8) + (int_predict_34class == char_to_index('B'))
+print('预测成8-B的个数:%d' % sum(idx_predicted_8B))
+
+# 被预测成0DQ的数据
+idx_predicted_0DQ = (int_predict_34class == 0) + (int_predict_34class == char_to_index('D')) + (
+    int_predict_34class == char_to_index('Q'))
+print('预测成0-D-Q的个数:%d' % sum(idx_predicted_0DQ))
+
+start = time.time()
+binary_result_56 = cnn_batch_predict(X_test[idx_predicted_56], weights_56)
+
+binary_result_0DQ = cnn_batch_predict(X_test[idx_predicted_0DQ], weights_0DQ)
+
+# 取局部特征，左半边 15*8
+# print(int_predict_34class[37053])
+binary_result_8B = cnn_batch_predict(X_test[idx_predicted_8B][:, :, :, :8], weights_8B)
+
+binary_result_56[binary_result_56 == 0] = 5
+binary_result_56[binary_result_56 == 1] = 6
+# print(binary_result_0DQ)
+# print(binary_result_8B)
+
+binary_result_8B[binary_result_8B == 0] = 8
+binary_result_8B[binary_result_8B == 1] = char_to_index('B')
+
+# print(binary_result_8B)
+binary_result_0DQ[binary_result_0DQ == 0] = 0
+binary_result_0DQ[binary_result_0DQ == 1] = char_to_index('D')
+binary_result_0DQ[binary_result_0DQ == 2] = char_to_index('Q')
+
+# 修正结果
+int_predict_34class[idx_predicted_56] = binary_result_56
+int_predict_34class[idx_predicted_8B] = binary_result_8B
+int_predict_34class[idx_predicted_0DQ] = binary_result_0DQ
+
+print( count_result(int_predict_34class, y_test))
+
+print([character_name[item] for item in int_predict_34class])
+
+end = time.time()
+print('time:%ds' % (end - start))
+
+
+
+
+
+
+
+
+
+
+quit()
 # 用二分类器修正34分类结果
 # 34分类前21个模型的预测结果
 run_id = [99, 129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 758, 864, 875, 890, 905, 975, 1014]
@@ -684,7 +778,8 @@ run_id = [99, 129, 141, 245, 249, 270, 287, 300, 311, 375, 425, 509, 543, 630, 7
 start = 141
 for index in run_id:
     int_predict_34class = np.asarray(pickle.load(predict_result_34class_file))
-    int_predict_34class = np.asarray([0,0,0,0,29,0,12,0,25,0,12,0,0,6,6,13,12])
+    print(int_predict_34class)
+    # int_predict_34class = np.asarray([0,0,0,0,29,0,12,0,25,0,12,0,0,6,6,13,12])
     if index != start:
         continue
 
@@ -721,7 +816,7 @@ for index in run_id:
 
     # 取局部特征，左半边 15*8
     # print(int_predict_34class[37053])
-    binary_result_8B = cnn_batch_predict(X_test[idx_predicted_8B][:, :, :, :], weights_8B)
+    binary_result_8B = cnn_batch_predict(X_test[idx_predicted_8B][:, :, :, :8], weights_8B)
 
     binary_result_56[binary_result_56 == 0] = 5
     binary_result_56[binary_result_56 == 1] = 6
@@ -748,4 +843,4 @@ for index in run_id:
     end = time.time()
     print('time:%ds' % (end - start))
 
-    # break
+    break
