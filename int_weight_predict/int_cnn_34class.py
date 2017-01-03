@@ -498,6 +498,8 @@ print(X_other.shape)
 print(other_X_new.shape)
 X_test = other_X_new
 y_test = other_y_new
+print(X_test[12340][0])
+
 # 真实值              ['0', '0', '0', '0', '0', '0', '0', 'C']
 # 34分类              ['Q', 'D', '0', '0', '0', '0', 'Q', 'Q']
 # 加0-D-Q分类器        ['D', 'D', '0', 'D', '0', '0', 'Q', 'Q']
@@ -531,9 +533,10 @@ y_test = other_y_new
 
 
 
-# save_img_to_bininary_file(X_val,y_val,name='val')
+save_img_to_bininary_file(X_val,y_val,name='val')
 # save_img_to_bininary_file(X_test, y_test,name='test')
 # save_img_to_bininary_file(X_other, y_other,name='other')
+# save_img_to_bininary_file(other_X_new, other_y_new,name='other_new')
 # 将模型权重保存
 # save_model_file_to_pickle()
 # quit()
