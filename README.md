@@ -3,7 +3,7 @@
 ####[Digit Recognition C语言实现版本](https://github.com/JDwangmo/digitRecognition_C)
 
 ### summary:
-1. 
+1. 当前版本 version1.0
 
 ### 环境:
 - Ubuntu 14.04 / Linux mint 17.03
