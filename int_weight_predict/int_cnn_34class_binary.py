@@ -399,10 +399,10 @@ def save_cnn_weight_to_bininary_file(model_weights, type='8B'):
         weight1 = weight.reshape(weight.shape[0], -1)
         # print(weight1[0])
         if len(weight.shape) == 4:
-        # conv weight,reverse
+            # conv weight,reverse
             weight1 = np.asarray([item[-1::-1] for item in weight1])
         if len(weight.shape) == 2:
-        # fc1 weight,reverse
+            # fc1 weight,reverse
             weight1 = np.transpose(weight1)
         # print(weight1[0])
         np.savetxt(fout,
@@ -478,7 +478,7 @@ def save_model_file_to_pickle(type='8B'):
             # print(model_file)
 
 
-def train_CNN_model(train_X, train_y, X_test, y_test, other_X, other_y):
+def train_CNN_model(train_X, train_y, X_test, y_test, other_X, other_y, other_X_new, other_y_new):
     '''
     训练56二分类器
     :param train_X:
@@ -490,6 +490,7 @@ def train_CNN_model(train_X, train_y, X_test, y_test, other_X, other_y):
     :return:
     '''
     from keras.utils import np_utils
+    image_higth, image_width = 15, 15
     model, mid_output = Net_model(layer1, hidden1, region, image_higth, image_width, nb_classes=nb_classes, lr=0.01)
 
     train_X = train_X[(train_y == 5) + (train_y == 6)]
@@ -506,6 +507,9 @@ def train_CNN_model(train_X, train_y, X_test, y_test, other_X, other_y):
     other_X = other_X[(other_y == 5) + (other_y == 6)]
     other_y = other_y[(other_y == 5) + (other_y == 6)]
 
+    other_X_new = other_X_new[(other_y_new == 5) + (other_y_new == 6)]
+    other_y_new = other_y_new[(other_y_new == 5) + (other_y_new == 6)]
+
     train_y = np_utils.to_categorical(train_y, 2)
 
     model.fit(
@@ -514,9 +518,9 @@ def train_CNN_model(train_X, train_y, X_test, y_test, other_X, other_y):
         nb_epoch=nb_epoch,
         shuffle=True,
         batch_size=32,
-        verbose=1,
+        verbose=2,
     )
-
+    # 保存
     fout = open(os.path.join(model_root_path, '56binary_model_weight.pkl'), 'w')
     pickle.dump(model.get_weights(), fout)
 
@@ -536,6 +540,13 @@ def train_CNN_model(train_X, train_y, X_test, y_test, other_X, other_y):
 
     print(np.mean(predicted == other_y))
 
+    predicted = model.predict_classes(other_X_new, verbose=0)
+    # 恢复标签
+    predicted[predicted == 0] = 5
+    predicted[predicted == 1] = 6
+
+    print(np.mean(predicted == other_y_new))
+
 
 def binary_class_test():
     '''
@@ -550,7 +561,7 @@ def binary_class_test():
             # 找到对应模型文件
 
             if index < start:
-                weights = pickle.load(fin)
+                # weights = pickle.load(fin)
                 continue
 
             weights = pickle.load(fin)
@@ -651,22 +662,24 @@ s = '''{'0,6': 4, '6,B': 1, '1,9': 1, '1,4': 1, '6,8': 9, 'H,K': 2, '3,8': 4, '5
 {'D,Q': 2, '7,T': 5, '3,9': 3, '0,Q': 15, '5,S': 4, '1,T': 3, '6,B': 2, '5,6': 2, '8,B': 8, '6,8': 1, '4,A': 3, '0,D': 8, '4,G': 1, '2,Z': 19, '5,B': 3, 'G,Q': 1, 'K,X': 2, 'K,Y': 1}'''
 # generation_badcese(s)
 # quit()
-# region 读取数据集：验证数据(64369个)、测试数据(64381个)、其他应用数据集(243391个)
+# region 读取数据集：验证数据(85041 个)、测试数据(64381个)、应用数据集(243391个)、其他(26515)
 (X_val, y_val), (X_test, y_test), (X_other, y_other), (other_X_new, other_y_new) = load_valdata(version='1214')
 
+print(X_val.shape)
 print(X_test.shape)
 print(X_other.shape)
 print(other_X_new.shape)
-
 
 # test_fin = open('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/Data1129/pm_TestSet.pickle')
 # X_test = pickle.load(test_fin)
 # y_test = pickle.load(test_fin)
 # print([character_name[item] for item in y_test])
 
-# region CNN 模型的训练
-# train_CNN_model(X_train, y_train, X_test, y_test, X_other, y_other)
-# quit()
+# region CNN 模型的训练 -- 56 binary
+train_CNN_model(X_val, y_val, X_test, y_test, X_other, y_other, other_X_new, other_y_new)
+# weights_56_BK = pickle.load(open(os.path.join(model_root_path, '56binary_model_weight_BK.pkl'), 'r'))
+# weights_56 = pickle.load(open(os.path.join(model_root_path, '56binary_model_weight.pkl'), 'r'))
+quit()
 # endregion
 # region 保存图片到二进制文件
 # save_img_to_bininary_file(X_val,y_val,name='val')
@@ -674,7 +687,7 @@ print(other_X_new.shape)
 # save_img_to_bininary_file(X_other, y_other,name='other')
 # endregion
 # region 将模型权重保存
-# save_model_file_to_pickle(type='8B)
+# save_model_file_to_pickle(type='8B')
 # quit()
 # endregion
 # region 测试模型
@@ -697,13 +710,14 @@ elif option == 'other':
     y_test = y_other
 
 elif option == 'other_new':
-    predict_result_34class_file = open('/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1214/34class_other_new_result.csv', 'r')
+    predict_result_34class_file = open(
+        '/home/jdwang/PycharmProjects/digitRecognition/int_weight_predict/modelAndData1214/34class_other_new_result.csv',
+        'r')
     X_test = other_X_new
     y_test = other_y_new
 int_predict_34class = np.asarray(pickle.load(predict_result_34class_file))
 print(int_predict_34class)
 weights_56 = pickle.load(open(os.path.join(model_root_path, '56binary_model_weight.pkl'), 'r'))
-
 
 # 读取二分类器的权重 - 8-B
 weights_8B = pickle.load(open(os.path.join(model_root_path, '8Bbinary_model_weight.pkl'), 'r'))
@@ -754,21 +768,12 @@ int_predict_34class[idx_predicted_56] = binary_result_56
 int_predict_34class[idx_predicted_8B] = binary_result_8B
 int_predict_34class[idx_predicted_0DQ] = binary_result_0DQ
 
-print( count_result(int_predict_34class, y_test))
+print(count_result(int_predict_34class, y_test))
 
 print([character_name[item] for item in int_predict_34class])
 
 end = time.time()
 print('time:%ds' % (end - start))
-
-
-
-
-
-
-
-
-
 
 quit()
 # 用二分类器修正34分类结果
